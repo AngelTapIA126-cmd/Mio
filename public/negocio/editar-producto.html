@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DriverGo - Editar Producto</title>
+  <link rel="stylesheet" href="/css/global.css"/>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <button class="back-btn" onclick="history.back()">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M19 12H5M12 5l-7 7 7 7"/>
+      </svg>
+    </button>
+    <span class="header-title">Editar producto</span>
+    <div style="width:30px"></div>
+  </div>
+
+  <div style="padding:24px 24px 40px;">
+
+    <div id="error-msg" class="error-msg"></div>
+
+    <div class="input-group">
+      <label class="input-label">Nombre del producto</label>
+      <input type="text" id="nombre" class="input-field" placeholder="Ej. Azucar Zulka 1kg"/>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Precio</label>
+      <input type="number" id="precio" class="input-field" placeholder="0.00" step="0.01" min="0"/>
+      <small style="font-size:11px;color:#9ca3af;margin-top:4px;display:block;">
+        (En caso de que tu producto se venda a granel por kilo, indica el precio correspondiente a 1 kg)
+      </small>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Descripción</label>
+      <input type="text" id="descripcion" class="input-field" placeholder="ej. Paquete Azucar Zulka Empacada 1kg"/>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Unidades disponibles</label>
+      <select id="unidades" class="input-field">
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="15">15</option>
+        <option value="20">20</option>
+        <option value="25">25</option>
+        <option value="30">30</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+      </select>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Imagen del producto</label>
+      <label class="upload-field" for="imagen">
+        <span id="imagen-label">Cambiar imagen (opcional)</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+      </label>
+      <input type="file" id="imagen" accept="image/*" style="display:none" onchange="mostrarNombre(this)"/>
+      <input type="hidden" id="imagen-actual"/>
+    </div>
+
+    <button class="btn btn-green" id="btn-guardar" onclick="guardar()">Guardar</button>
+
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="overlay" id="overlay"></div>
+<div class="toast" id="toast">
+  <button class="toast-close" onclick="hideToast()">✕</button>
+  <div class="toast-icon">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5">
+      <path d="M20 6L9 17l-5-5"/>
+    </svg>
+  </div>
+  <span class="toast-title" id="toast-title">Guardado con éxito</span>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  const user = getUser();
+  if (!user || user.tipo !== 'negocio') window.location.href = '/negocio/login.html';
+
+  const productoId = localStorage.getItem('producto_editar');
+  if (!productoId) window.location.href = '/negocio/home.html';
+
+  // Cargar datos del producto
+  async function cargarProducto() {
+    const prods = await apiGet(`/productos/${user.id}`);
+    const prod = prods.find(p => p.id == productoId);
+    if (!prod) { window.location.href = '/negocio/home.html'; return; }
+
+    document.getElementById('nombre').value = prod.nombre;
+    document.getElementById('precio').value = prod.precio;
+    document.getElementById('descripcion').value = prod.descripcion || '';
+    document.getElementById('unidades').value = prod.unidades || 20;
+    document.getElementById('imagen-actual').value = prod.imagen || '';
+    if (prod.imagen) {
+      document.getElementById('imagen-label').textContent = prod.imagen;
+    }
+  }
+
+  function mostrarNombre(input) {
+    if (input.files && input.files[0]) {
+      document.getElementById('imagen-label').textContent = input.files[0].name;
+    }
+  }
+
+  async function guardar() {
+    const nombre = document.getElementById('nombre').value.trim();
+    const precio = document.getElementById('precio').value.trim();
+    const descripcion = document.getElementById('descripcion').value.trim();
+    const unidades = document.getElementById('unidades').value;
+    const imagen = document.getElementById('imagen').files[0];
+    const imagenActual = document.getElementById('imagen-actual').value;
+    hideError('error-msg');
+
+    if (!nombre || !precio) {
+      showError('error-msg', 'El nombre y precio son requeridos');
+      return;
+    }
+
+    const btn = document.getElementById('btn-guardar');
+    btn.textContent = 'Guardando...';
+    btn.disabled = true;
+
+    const formData = new FormData();
+    formData.append('nombre', nombre);
+    formData.append('precio', precio);
+    formData.append('descripcion', descripcion);
+    formData.append('unidades', unidades);
+    formData.append('imagen_actual', imagenActual);
+    if (imagen) formData.append('imagen', imagen);
+
+    const res = await apiPutForm(`/productos/${productoId}`, formData);
+
+    if (res.ok) {
+      const overlay = document.getElementById('overlay');
+      const toast = document.getElementById('toast');
+      overlay.classList.add('show');
+      toast.classList.add('show');
+      setTimeout(() => {
+        hideToast();
+        window.location.href = '/negocio/home.html';
+      }, 1500);
+    } else {
+      showError('error-msg', res.error || 'Error al guardar');
+      btn.textContent = 'Guardar';
+      btn.disabled = false;
+    }
+  }
+
+  cargarProducto();
+</script>
+</body>
+</html>

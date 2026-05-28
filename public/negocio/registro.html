@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DriverGo - Registro Negocio</title>
+  <link rel="stylesheet" href="/css/global.css"/>
+  <style>
+    .auth-screen { padding: 40px 28px; }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="auth-screen">
+
+    <div class="auth-logo">
+      <div class="auth-logo-row">
+        <img src="/images/LOGO_DRIVERGO.png" style="height:60px;width:auto;"/>
+      </div>
+      <h1 class="auth-title">Crea una cuenta</h1>
+      <p class="auth-subtitle">Regístrate para disfrutar de este servicio</p>
+    </div>
+
+    <div id="error-msg" class="error-msg"></div>
+
+    <div class="input-group">
+      <label class="input-label">Ingresa el nombre de tu negocio</label>
+      <input type="text" id="nombre" class="input-field" placeholder="Ej. Abarrotes México"/>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Tipo de negocio</label>
+      <select id="tipo" class="input-field">
+        <option value="">Selecciona un tipo</option>
+        <option value="Tienda/Abarrotes">Tienda/Abarrotes</option>
+        <option value="Frutería">Frutería</option>
+        <option value="Pastelería">Pastelería</option>
+        <option value="Ferretería">Ferretería</option>
+        <option value="Farmacia">Farmacia</option>
+        <option value="Restaurante">Restaurante</option>
+        <option value="Otro">Otro</option>
+      </select>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Dirección</label>
+      <input type="text" id="direccion" class="input-field" placeholder="Calle 10 por Av. Luis Donaldo Colosio"/>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Ingresa tu número de teléfono</label>
+      <input type="tel" id="telefono" class="input-field" placeholder="Ej. 999 120 4532"/>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Crea una contraseña</label>
+      <input type="password" id="password" class="input-field" placeholder="••••••••••••"/>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Sube tu logo o fachada de tu negocio</label>
+      <label class="upload-field" for="imagen">
+        <span id="imagen-label">Subir logo o fachada de negocio</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+      </label>
+      <input type="file" id="imagen" accept="image/*" style="display:none" onchange="mostrarNombreImagen(this)"/>
+    </div>
+
+    <button class="btn btn-green" id="btn-registro" onclick="registro()">Continuar</button>
+
+    <div class="auth-footer">
+      ¿Ya tienes cuenta? <a href="/negocio/login.html" style="color:#16a34a;">Iniciar Sesión</a>
+    </div>
+
+    <p class="auth-terms">
+      Al hacer clic en continuar, aceptas nuestros
+      <a href="#">Términos de servicio</a> y <a href="#">Política de privacidad</a>
+    </p>
+
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  function mostrarNombreImagen(input) {
+    const label = document.getElementById('imagen-label');
+    if (input.files && input.files[0]) {
+      label.textContent = input.files[0].name;
+    }
+  }
+
+  async function registro() {
+    const nombre = document.getElementById('nombre').value.trim();
+    const tipo = document.getElementById('tipo').value;
+    const direccion = document.getElementById('direccion').value.trim();
+    const telefono = document.getElementById('telefono').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const imagen = document.getElementById('imagen').files[0];
+    hideError('error-msg');
+
+    if (!nombre || !tipo || !direccion || !telefono || !password) {
+      showError('error-msg', 'Por favor llena todos los campos');
+      return;
+    }
+
+    if (password.length < 6) {
+      showError('error-msg', 'La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
+    const btn = document.getElementById('btn-registro');
+    btn.textContent = 'Cargando...';
+    btn.disabled = true;
+
+    const formData = new FormData();
+    formData.append('nombre', nombre);
+    formData.append('tipo', tipo);
+    formData.append('direccion', direccion);
+    formData.append('telefono', telefono);
+    formData.append('password', password);
+    if (imagen) formData.append('imagen', imagen);
+
+    const res = await apiPostForm('/negocios/registro', formData);
+
+    if (res.ok) {
+      saveSession(res.token, { id: res.id, nombre: res.nombre, tipo: 'negocio' });
+      window.location.href = '/negocio/home.html';
+    } else {
+      showError('error-msg', res.error || 'Error al crear cuenta');
+      btn.textContent = 'Continuar';
+      btn.disabled = false;
+    }
+  }
+</script>
+</body>
+</html>

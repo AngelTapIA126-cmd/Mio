@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DriverGo - Negocio Login</title>
+  <link rel="stylesheet" href="/css/global.css"/>
+</head>
+<body>
+<div class="app">
+  <div class="auth-screen">
+
+    <div class="auth-logo">
+      <div class="auth-logo-row">
+        <img src="/images/LOGO_DRIVERGO.png" style="height:52px;width:auto;"/>
+      </div>
+      <h1 class="auth-title">Inicia sesión</h1>
+    </div>
+
+    <div id="error-msg" class="error-msg"></div>
+
+    <div class="input-group">
+      <label class="input-label">Ingresa tu número de teléfono</label>
+      <input type="tel" id="telefono" class="input-field" placeholder="Ej. 999 120 4532"/>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Ingresa tu contraseña</label>
+      <input type="password" id="password" class="input-field" placeholder="••••••••••••"/>
+    </div>
+
+    <button class="btn btn-green" id="btn-login" onclick="login()">Continuar</button>
+
+    <div class="auth-footer">
+      ¿No tienes cuenta? <a href="/negocio/registro.html" style="color:#16a34a;">Crear cuenta</a>
+    </div>
+
+    <p class="auth-terms">
+      Al hacer clic en continuar, aceptas nuestros
+      <a href="#">Términos de servicio</a> y <a href="#">Política de privacidad</a>
+    </p>
+
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  const user = getUser();
+  if (user && user.tipo === 'negocio') window.location.href = '/negocio/home.html';
+
+  async function login() {
+    const telefono = document.getElementById('telefono').value.trim();
+    const password = document.getElementById('password').value.trim();
+    hideError('error-msg');
+
+    if (!telefono || !password) {
+      showError('error-msg', 'Por favor llena todos los campos');
+      return;
+    }
+
+    const btn = document.getElementById('btn-login');
+    btn.textContent = 'Cargando...';
+    btn.disabled = true;
+
+    const res = await apiPost('/negocios/login', { telefono, password });
+
+    if (res.ok) {
+      saveSession(res.token, { id: res.id, nombre: res.nombre, tipo: 'negocio' });
+      window.location.href = '/negocio/home.html';
+    } else {
+      showError('error-msg', res.error || 'Error al iniciar sesión');
+      btn.textContent = 'Continuar';
+      btn.disabled = false;
+    }
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+</script>
+</body>
+</html>

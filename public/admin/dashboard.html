@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DriverGo - Dashboard Admin</title>
+  <link rel="stylesheet" href="/css/global.css"/>
+  <style>
+    body { background: #0f172a; }
+    .app { background: #0f172a; max-width: 100%; }
+
+    .admin-header {
+      background: #1e293b;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #334155;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .admin-header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .admin-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .admin-badge {
+      background: #2563eb;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-logout-admin {
+      background: #dc2626;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .admin-nav {
+      display: flex;
+      gap: 0;
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding: 0 24px;
+    }
+
+    .admin-nav::-webkit-scrollbar { display: none; }
+
+    .admin-nav-btn {
+      padding: 14px 20px;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      font-family: 'Nunito', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: #94a3b8;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .admin-nav-btn.active {
+      color: #2563eb;
+      border-bottom-color: #2563eb;
+    }
+
+    .admin-content { padding: 24px; }
+
+    /* Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: #1e293b;
+      border-radius: 14px;
+      padding: 20px;
+      border: 1px solid #334155;
+    }
+
+    .stat-icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .stat-valor {
+      font-family: 'Poppins', sans-serif;
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #64748b;
+      font-weight: 600;
+    }
+
+    /* Tabla */
+    .admin-table-wrap {
+      background: #1e293b;
+      border-radius: 14px;
+      border: 1px solid #334155;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .admin-table-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .admin-table-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 800;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: #0f172a;
+    }
+
+    td {
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #e2e8f0;
+      font-weight: 600;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #0f172a; }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .badge-activo { background: #14532d; color: #86efac; }
+    .badge-inactivo { background: #450a0a; color: #fca5a5; }
+    .badge-pendiente { background: #713f12; color: #fde68a; }
+    .badge-entregado { background: #14532d; color: #86efac; }
+    .badge-en_camino { background: #1e3a5f; color: #93c5fd; }
+    .badge-cancelado { background: #450a0a; color: #fca5a5; }
+
+    .btn-toggle {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-toggle.activar { background: #14532d; color: #86efac; }
+    .btn-toggle.desactivar { background: #450a0a; color: #fca5a5; }
+
+    /* Banner upload */
+    .banner-form {
+      background: #1e293b;
+      border-radius: 14px;
+      border: 1px solid #334155;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .banner-form-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 16px;
+    }
+
+    .admin-input {
+      width: 100%;
+      padding: 11px 14px;
+      background: #0f172a;
+      border: 1.5px solid #334155;
+      border-radius: 8px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      color: #fff;
+      outline: none;
+      margin-bottom: 12px;
+      transition: border-color 0.2s;
+    }
+
+    .admin-input:focus { border-color: #2563eb; }
+    .admin-input::placeholder { color: #475569; }
+
+    .banners-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .banner-card {
+      background: #0f172a;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #334155;
+    }
+
+    .banner-img {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+    }
+
+    .banner-info {
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .banner-titulo {
+      font-size: 12px;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+
+    .btn-eliminar-banner {
+      background: #450a0a;
+      color: #fca5a5;
+      border: none;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .empty-admin {
+      padding: 40px;
+      text-align: center;
+      color: #475569;
+      font-size: 14px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Header -->
+  <div class="admin-header">
+    <div class="admin-header-left">
+      <img src="/images/LOGO_DRIVERGO.png" style="height:32px;width:auto;"/>
+      <div>
+        <div class="admin-title">Panel Admin</div>
+      </div>
+      <span class="admin-badge">⚡ Super Admin</span>
+    </div>
+    <button class="btn-logout-admin" onclick="logout()">Cerrar sesión</button>
+  </div>
+
+  <!-- Nav -->
+  <div class="admin-nav">
+    <button class="admin-nav-btn active" onclick="cambiarTab('dashboard', this)">📊 Dashboard</button>
+    <button class="admin-nav-btn" onclick="cambiarTab('banners', this)">🖼️ Banners</button>
+    <button class="admin-nav-btn" onclick="cambiarTab('negocios', this)">🏪 Negocios</button>
+    <button class="admin-nav-btn" onclick="cambiarTab('clientes', this)">👥 Clientes</button>
+    <button class="admin-nav-btn" onclick="cambiarTab('repartidores', this)">🛵 Repartidores</button>
+    <button class="admin-nav-btn" onclick="cambiarTab('pedidos', this)">📦 Pedidos</button>
+  </div>
+
+  <div class="admin-content">
+
+    <!-- Dashboard -->
+    <div class="tab-content active" id="tab-dashboard">
+      <div class="stats-grid" id="stats-grid">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- Banners -->
+    <div class="tab-content" id="tab-banners">
+      <div class="banner-form">
+        <div class="banner-form-title">➕ Agregar nuevo banner</div>
+        <input type="text" class="admin-input" id="banner-titulo" placeholder="Título del banner (opcional)"/>
+        <input type="file" id="banner-imagen" accept="image/*" class="admin-input"/>
+        <input type="number" class="admin-input" id="banner-orden" placeholder="Orden (0, 1, 2...)"/>
+        <button class="btn btn-blue" onclick="subirBanner()">Subir banner</button>
+      </div>
+
+      <div class="admin-table-wrap">
+        <div class="admin-table-header">
+          <span class="admin-table-title">🖼️ Banners activos</span>
+        </div>
+        <div class="banners-grid" id="banners-grid" style="padding:16px;">
+          <div class="loading"><div class="spinner"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Negocios -->
+    <div class="tab-content" id="tab-negocios">
+      <div class="admin-table-wrap">
+        <div class="admin-table-header">
+          <span class="admin-table-title">🏪 Todos los negocios</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table id="tabla-negocios">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Tipo</th>
+                <th>Teléfono</th>
+                <th>Estado</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-negocios">
+              <tr><td colspan="6" class="empty-admin">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Clientes -->
+    <div class="tab-content" id="tab-clientes">
+      <div class="admin-table-wrap">
+        <div class="admin-table-header">
+          <span class="admin-table-title">👥 Todos los clientes</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Teléfono</th>
+                <th>Registro</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-clientes">
+              <tr><td colspan="4" class="empty-admin">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Repartidores -->
+    <div class="tab-content" id="tab-repartidores">
+      <div class="admin-table-wrap">
+        <div class="admin-table-header">
+          <span class="admin-table-title">🛵 Todos los repartidores</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Teléfono</th>
+                <th>Vehículo</th>
+                <th>Estado</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-repartidores">
+              <tr><td colspan="6" class="empty-admin">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pedidos -->
+    <div class="tab-content" id="tab-pedidos">
+      <div class="admin-table-wrap">
+        <div class="admin-table-header">
+          <span class="admin-table-title">📦 Todos los pedidos</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Cliente</th>
+                <th>Negocio</th>
+                <th>Total</th>
+                <th>Estado</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-pedidos">
+              <tr><td colspan="6" class="empty-admin">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  const user = getUser();
+  if (!user || user.tipo !== 'admin') window.location.href = '/admin/login.html';
+
+  function cambiarTab(tab, btn) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.admin-nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    btn.classList.add('active');
+    cargarTab(tab);
+  }
+
+  function cargarTab(tab) {
+    if (tab === 'dashboard') cargarStats();
+    else if (tab === 'banners') cargarBanners();
+    else if (tab === 'negocios') cargarNegocios();
+    else if (tab === 'clientes') cargarClientes();
+    else if (tab === 'repartidores') cargarRepartidores();
+    else if (tab === 'pedidos') cargarPedidos();
+  }
+
+  async function cargarStats() {
+    const stats = await apiGet('/admin/stats');
+    document.getElementById('stats-grid').innerHTML = `
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-valor">${stats.clientes}</div>
+        <div class="stat-label">Clientes</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🏪</div>
+        <div class="stat-valor">${stats.negocios}</div>
+        <div class="stat-label">Negocios</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🛵</div>
+        <div class="stat-valor">${stats.repartidores}</div>
+        <div class="stat-label">Repartidores</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-valor">${stats.pedidos}</div>
+        <div class="stat-label">Pedidos</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-valor">$${parseFloat(stats.ingresos).toFixed(0)}</div>
+        <div class="stat-label">Ingresos totales</div>
+      </div>
+    `;
+  }
+
+  async function cargarBanners() {
+    const banners = await apiGet('/banners');
+    const grid = document.getElementById('banners-grid');
+    if (!banners.length) {
+      grid.innerHTML = '<p class="empty-admin">Sin banners aún</p>';
+      return;
+    }
+    grid.innerHTML = banners.map(b => `
+      <div class="banner-card">
+        <img src="/uploads/${b.imagen}" class="banner-img"/>
+        <div class="banner-info">
+          <span class="banner-titulo">${b.titulo || 'Sin título'}</span>
+          <button class="btn-eliminar-banner" onclick="eliminarBanner(${b.id})">Eliminar</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async function subirBanner() {
+    const titulo = document.getElementById('banner-titulo').value;
+    const imagen = document.getElementById('banner-imagen').files[0];
+    const orden = document.getElementById('banner-orden').value || 0;
+    if (!imagen) { alert('Selecciona una imagen'); return; }
+    const formData = new FormData();
+    formData.append('titulo', titulo);
+    formData.append('imagen', imagen);
+    formData.append('orden', orden);
+    const res = await apiPostForm('/admin/banners', formData);
+    if (res.ok) {
+      alert('Banner subido correctamente');
+      cargarBanners();
+    } else {
+      alert(res.error || 'Error al subir banner');
+    }
+  }
+
+  async function eliminarBanner(id) {
+    if (!confirm('¿Eliminar este banner?')) return;
+    const res = await apiDelete(`/admin/banners/${id}`);
+    if (res.ok) cargarBanners();
+  }
+
+  async function cargarNegocios() {
+    const negocios = await apiGet('/admin/negocios');
+    document.getElementById('tbody-negocios').innerHTML = negocios.map(n => `
+      <tr>
+        <td>${n.id}</td>
+        <td>${n.nombre}</td>
+        <td>${n.tipo}</td>
+        <td>${n.telefono}</td>
+        <td><span class="badge ${n.activo ? 'badge-activo' : 'badge-inactivo'}">${n.activo ? 'Activo' : 'Inactivo'}</span></td>
+        <td>
+          <button class="btn-toggle ${n.activo ? 'desactivar' : 'activar'}"
+            onclick="toggleNegocio(${n.id}, ${n.activo ? 0 : 1})">
+            ${n.activo ? 'Desactivar' : 'Activar'}
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  async function toggleNegocio(id, activo) {
+    await apiPut(`/admin/negocios/${id}`, { activo });
+    cargarNegocios();
+  }
+
+  async function cargarClientes() {
+    const clientes = await apiGet('/admin/clientes');
+    document.getElementById('tbody-clientes').innerHTML = clientes.map(c => `
+      <tr>
+        <td>${c.id}</td>
+        <td>${c.nombres} ${c.apellidos}</td>
+        <td>${c.telefono}</td>
+        <td>${formatDate(c.created_at)}</td>
+      </tr>
+    `).join('');
+  }
+
+  async function cargarRepartidores() {
+    const reps = await apiGet('/admin/repartidores');
+    document.getElementById('tbody-repartidores').innerHTML = reps.map(r => `
+      <tr>
+        <td>${r.id}</td>
+        <td>${r.nombres} ${r.apellidos}</td>
+        <td>${r.telefono}</td>
+        <td>${r.tipo_vehiculo}</td>
+        <td><span class="badge ${r.disponible ? 'badge-activo' : 'badge-inactivo'}">${r.disponible ? 'Disponible' : 'No disponible'}</span></td>
+        <td>
+          <button class="btn-toggle ${r.disponible ? 'desactivar' : 'activar'}"
+            onclick="toggleRepartidor(${r.id}, ${r.disponible ? 0 : 1})">
+            ${r.disponible ? 'Desactivar' : 'Activar'}
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  async function toggleRepartidor(id, disponible) {
+    await apiPut(`/admin/repartidores/${id}`, { disponible });
+    cargarRepartidores();
+  }
+
+  async function cargarPedidos() {
+    const pedidos = await apiGet('/admin/pedidos');
+    document.getElementById('tbody-pedidos').innerHTML = pedidos.map(p => `
+      <tr>
+        <td>#${String(p.id).padStart(6,'0')}</td>
+        <td>${p.cliente_nombre}</td>
+        <td>${p.negocio_nombre}</td>
+        <td>$${parseFloat(p.total).toFixed(2)}</td>
+        <td><span class="badge badge-${p.estado}">${p.estado}</span></td>
+        <td>${formatDate(p.created_at)}</td>
+      </tr>
+    `).join('');
+  }
+
+  function logout() {
+    clearSession();
+    window.location.href = '/admin/login.html';
+  }
+
+  // Cargar dashboard al inicio
+  cargarStats();
+</script>
+</body>
+</html>

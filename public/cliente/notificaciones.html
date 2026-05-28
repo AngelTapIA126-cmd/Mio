@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DriverGo - Notificaciones</title>
+  <link rel="stylesheet" href="/css/global.css"/>
+  <style>
+    .content { padding: 16px 20px 90px; }
+
+    .notif-card {
+      background: #fff;
+      border: 1px solid #f3f4f6;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .notif-card:active { transform: scale(0.98); }
+
+    .notif-titulo {
+      font-size: 14px;
+      font-weight: 800;
+      color: #111;
+      margin-bottom: 4px;
+    }
+
+    .notif-sub {
+      font-size: 12px;
+      color: #6b7280;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .notif-tiempo {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-bottom: 8px;
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 60px 20px;
+      gap: 12px;
+      color: #6b7280;
+    }
+
+    .empty-state p { font-size: 15px; font-weight: 700; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <button class="back-btn" onclick="history.back()">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M19 12H5M12 5l-7 7 7 7"/>
+      </svg>
+    </button>
+    <span class="header-title">Notificaciones</span>
+    <div style="width:30px"></div>
+  </div>
+
+  <div class="content">
+    <div id="notif-list">
+      <div class="loading"><div class="spinner"></div> Cargando...</div>
+    </div>
+  </div>
+
+  <!-- Bottom nav -->
+  <nav class="bottom-nav">
+    <button class="nav-btn" onclick="window.location.href='/cliente/home.html'">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      Inicio
+    </button>
+    <button class="nav-btn" onclick="window.location.href='/cliente/carrito.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/>
+      </svg>
+      Carrito
+    </button>
+    <button class="nav-btn" onclick="window.location.href='/cliente/pedidos.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+      </svg>
+      Pedidos
+    </button>
+    <button class="nav-btn active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>
+      </svg>
+      Alertas
+    </button>
+    <button class="nav-btn" onclick="window.location.href='/cliente/home.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+      </svg>
+      Perfil
+    </button>
+  </nav>
+
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  const user = getUser();
+  if (!user || user.tipo !== 'cliente') window.location.href = '/cliente/login.html';
+
+  const estadoLabels = {
+    'pendiente': 'Pedido pendiente',
+    'recibido': 'Pedido recibido por el negocio',
+    'buscando_repartidor': 'Buscando repartidor',
+    'en_proceso': 'Pedido en proceso',
+    'en_camino': 'Pedido en camino',
+    'entregado': 'Pedido entregado',
+    'cancelado': 'Pedido cancelado'
+  };
+
+  function tiempoRelativo(fecha) {
+    const diff = Math.floor((Date.now() - new Date(fecha)) / 1000);
+    if (diff < 60) return 'Hace un momento';
+    if (diff < 3600) return `Hace ${Math.floor(diff/60)} minuto(s)`;
+    if (diff < 86400) return `Hace ${Math.floor(diff/3600)} hora(s)`;
+    return `Hace ${Math.floor(diff/86400)} día(s)`;
+  }
+
+  async function cargarNotificaciones() {
+    const pedidos = await apiGet('/pedidos/cliente');
+    const list = document.getElementById('notif-list');
+
+    if (!pedidos.length) {
+      list.innerHTML = `
+        <div class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5">
+            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 01-3.46 0"/>
+          </svg>
+          <p>Sin notificaciones</p>
+        </div>`;
+      return;
+    }
+
+    list.innerHTML = pedidos.map(p => `
+      <div class="notif-card" onclick="verPedido(${p.id}, '${p.estado}', '${p.direccion_envio}', '${p.updated_at}')">
+        <div class="notif-tiempo">${tiempoRelativo(p.updated_at)}</div>
+        <div class="notif-titulo">${estadoLabels[p.estado] || p.estado}</div>
+        <div class="notif-sub">${p.negocio_nombre} · $${parseFloat(p.total).toFixed(2)}</div>
+        <button style="padding:7px 16px;background:#f3f4f6;border:none;border-radius:8px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">
+          Ver pedido
+        </button>
+      </div>
+    `).join('');
+  }
+
+  function verPedido(id, estado, direccion, fecha) {
+    localStorage.setItem('pedido_seguimiento', JSON.stringify({ id, estado, direccion, fecha }));
+    if (estado === 'entregado') {
+      window.location.href = '/cliente/pedido-entregado.html';
+    } else {
+      window.location.href = '/cliente/seguimiento.html';
+    }
+  }
+
+  cargarNotificaciones();
+  setInterval(cargarNotificaciones, 10000);
+</script>
+</body>
+</html>

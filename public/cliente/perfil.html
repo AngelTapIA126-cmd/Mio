@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DriverGo - Mi Perfil</title>
+  <link rel="stylesheet" href="/css/global.css"/>
+  <style>
+    .content { padding: 20px 20px 90px; }
+
+    .perfil-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 28px 20px;
+      background: linear-gradient(135deg, #dbeafe, #dcfce7);
+      border-radius: 16px;
+      margin-bottom: 20px;
+    }
+
+    .perfil-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: #2563eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Poppins', sans-serif;
+      font-size: 32px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+
+    .perfil-nombre {
+      font-family: 'Poppins', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      color: #111;
+      margin-bottom: 4px;
+      text-align: center;
+    }
+
+    .perfil-since {
+      font-size: 12px;
+      color: #6b7280;
+      font-weight: 600;
+    }
+
+    .info-card {
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid #f3f4f6;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .info-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .info-item:last-child { border-bottom: none; }
+
+    .info-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .info-icon.blue { background: #dbeafe; }
+    .info-icon.green { background: #dcfce7; }
+    .info-icon.purple { background: #f3e8ff; }
+    .info-icon.orange { background: #ffedd5; }
+
+    .info-content { flex: 1; }
+
+    .info-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+    }
+
+    .info-valor {
+      font-size: 15px;
+      font-weight: 800;
+      color: #111;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+
+    .btn-logout {
+      width: 100%;
+      padding: 15px;
+      background: #fee2e2;
+      color: #dc2626;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 8px;
+    }
+
+    .btn-logout:hover { background: #fecaca; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <button class="back-btn" onclick="history.back()">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M19 12H5M12 5l-7 7 7 7"/>
+      </svg>
+    </button>
+    <span class="header-title">Mi Perfil</span>
+    <div style="width:30px"></div>
+  </div>
+
+  <div class="content">
+
+    <!-- Avatar y nombre -->
+    <div class="perfil-header" id="perfil-header">
+      <div class="loading"><div class="spinner"></div></div>
+    </div>
+
+    <!-- Info -->
+    <div class="info-card" id="info-card">
+      <div class="loading"><div class="spinner"></div> Cargando...</div>
+    </div>
+
+    <button class="btn-logout" onclick="logout()">
+      Cerrar sesión
+    </button>
+
+  </div>
+
+  <!-- Bottom nav -->
+  <nav class="bottom-nav">
+    <button class="nav-btn" onclick="window.location.href='/cliente/home.html'">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      Inicio
+    </button>
+    <button class="nav-btn" onclick="window.location.href='/cliente/carrito.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/>
+      </svg>
+      Carrito
+    </button>
+    <button class="nav-btn" onclick="window.location.href='/cliente/pedidos.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+      </svg>
+      Pedidos
+    </button>
+    <button class="nav-btn" onclick="window.location.href='/cliente/notificaciones.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>
+      </svg>
+      Alertas
+    </button>
+    <button class="nav-btn active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+      </svg>
+      Perfil
+    </button>
+  </nav>
+
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  const user = getUser();
+  if (!user || user.tipo !== 'cliente') window.location.href = '/cliente/login.html';
+
+  async function cargarPerfil() {
+    const perfil = await apiGet('/clientes/perfil');
+
+    // Avatar con iniciales
+    const iniciales = (perfil.nombres[0] + perfil.apellidos[0]).toUpperCase();
+    document.getElementById('perfil-header').innerHTML = `
+      <div class="perfil-avatar">${iniciales}</div>
+      <div class="perfil-nombre">${perfil.nombres} ${perfil.apellidos}</div>
+      <div class="perfil-since">Cliente desde ${formatDate(perfil.created_at)}</div>
+    `;
+
+    document.getElementById('info-card').innerHTML = `
+      <div class="info-item">
+        <div class="info-icon blue">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <div class="info-content">
+          <div class="info-label">Nombre completo</div>
+          <div class="info-valor">${perfil.nombres} ${perfil.apellidos}</div>
+        </div>
+      </div>
+
+      <div class="info-item">
+        <div class="info-icon green">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
+            <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.67A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92v2z"/>
+          </svg>
+        </div>
+        <div class="info-content">
+          <div class="info-label">Número de teléfono</div>
+          <div class="info-valor">${perfil.telefono}</div>
+        </div>
+      </div>
+
+      <div class="info-item">
+        <div class="info-icon orange">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+            <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+          </svg>
+        </div>
+        <div class="info-content">
+          <div class="info-label">Total de pedidos</div>
+          <div class="info-valor">${perfil.total_pedidos} pedido${perfil.total_pedidos !== 1 ? 's' : ''}</div>
+        </div>
+      </div>
+
+      <div class="info-item">
+        <div class="info-icon purple">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+        </div>
+        <div class="info-content">
+          <div class="info-label">Miembro desde</div>
+          <div class="info-valor">${formatDate(perfil.created_at)}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function logout() {
+    clearSession();
+    window.location.href = '/index.html';
+  }
+
+  cargarPerfil();
+</script>
+</body>
+</html>

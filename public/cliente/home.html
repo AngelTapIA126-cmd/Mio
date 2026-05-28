@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DriverGo - Inicio</title>
+  <link rel="stylesheet" href="/css/global.css"/>
+  <style>
+    .content { padding-bottom: 80px; }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px 0;
+    }
+
+    .topbar-search {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #f3f4f6;
+      border-radius: 12px;
+      padding: 10px 14px;
+      margin-right: 12px;
+    }
+
+    .topbar-search input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      color: #111;
+    }
+
+    .topbar-search input::placeholder { color: #9ca3af; }
+
+    .ubicacion {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 20px 4px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #374151;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 0;
+      padding: 8px 20px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .nav-tabs::-webkit-scrollbar { display: none; }
+
+    .nav-tab {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border: none;
+      background: none;
+      font-family: 'Nunito', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: #6b7280;
+      cursor: pointer;
+      white-space: nowrap;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .nav-tab.active {
+      color: #2563eb;
+      border-bottom-color: #2563eb;
+    }
+
+    .banner-wrap {
+      margin: 8px 20px;
+      border-radius: 14px;
+      overflow: hidden;
+      position: relative;
+      height: 160px;
+      background: #e5e7eb;
+    }
+
+    .banner-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #dbeafe, #dcfce7);
+      font-family: 'Poppins', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: #374151;
+    }
+
+    .categorias-scroll {
+      display: flex;
+      gap: 12px;
+      padding: 4px 20px 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .categorias-scroll::-webkit-scrollbar { display: none; }
+
+    .cat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: transform 0.2s;
+    }
+
+    .cat-item:active { transform: scale(0.93); }
+
+    .cat-icon-placeholder {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      border: 2px solid #f3f4f6;
+    }
+
+    .cat-name {
+      font-size: 11px;
+      font-weight: 700;
+      color: #374151;
+      text-align: center;
+      max-width: 64px;
+    }
+
+    .negocios-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 0 20px;
+    }
+
+    .negocio-card {
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid #f3f4f6;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      cursor: pointer;
+      transition: transform 0.2s;
+      background: #fff;
+    }
+
+    .negocio-card:active { transform: scale(0.97); }
+
+    .negocio-img {
+      width: 100%;
+      height: 90px;
+      object-fit: cover;
+      background: #f3f4f6;
+    }
+
+    .negocio-img-placeholder {
+      width: 100%;
+      height: 90px;
+      background: linear-gradient(135deg, #dbeafe, #dcfce7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+    }
+
+    .negocio-info { padding: 10px 10px 12px; }
+
+    .negocio-name {
+      font-size: 13px;
+      font-weight: 800;
+      color: #111;
+      margin-bottom: 2px;
+    }
+
+    .negocio-tipo {
+      font-size: 11px;
+      color: #6b7280;
+      font-weight: 600;
+    }
+
+    .recomendaciones-scroll {
+      display: flex;
+      gap: 12px;
+      padding: 4px 20px 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .recomendaciones-scroll::-webkit-scrollbar { display: none; }
+
+    .prod-card-sm {
+      flex-shrink: 0;
+      width: 140px;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid #f3f4f6;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      background: #fff;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .prod-card-sm:active { transform: scale(0.97); }
+
+    .prod-img-sm {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+      background: #f3f4f6;
+    }
+
+    .prod-img-placeholder-sm {
+      width: 100%;
+      height: 100px;
+      background: linear-gradient(135deg, #fef9c3, #dcfce7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+    }
+
+    .prod-info-sm { padding: 8px 10px 10px; }
+
+    .prod-negocio-sm {
+      font-size: 10px;
+      color: #6b7280;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .prod-name-sm {
+      font-size: 12px;
+      font-weight: 800;
+      color: #111;
+      margin-bottom: 2px;
+    }
+
+    .prod-price-sm {
+      font-size: 13px;
+      font-weight: 800;
+      color: #2563eb;
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2">
+        <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/>
+      </svg>
+      <input type="text" placeholder="Buscar" id="search-input" oninput="buscar(this.value)"/>
+    </div>
+    <img src="/images/ICONO_DRIVERGO.png" style="height:36px;width:auto;"/>
+  </div>
+
+  <!-- Ubicacion -->
+  <div class="ubicacion">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5">
+      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+      <circle cx="12" cy="9" r="2.5"/>
+    </svg>
+    <span id="ubicacion-txt">Obteniendo ubicación...</span>
+  </div>
+
+  <div class="content">
+
+    <!-- Banner -->
+    <div class="banner-wrap" id="banner-wrap">
+      <div class="banner-placeholder">🛵 DriverGo</div>
+    </div>
+
+    <!-- Categorias -->
+    <div class="section-title" style="margin-top:16px;">
+      Categorías <span>›</span>
+    </div>
+    <div class="categorias-scroll">
+      <div class="cat-item" onclick="filtrarCategoria('Tienda/Abarrotes')">
+        <div class="cat-icon-placeholder" style="background:#dbeafe;">🏪</div>
+        <span class="cat-name">Tiendas</span>
+      </div>
+      <div class="cat-item" onclick="filtrarCategoria('Frutería')">
+        <div class="cat-icon-placeholder" style="background:#dcfce7;">🍎</div>
+        <span class="cat-name">Frutería</span>
+      </div>
+      <div class="cat-item" onclick="filtrarCategoria('Pastelería')">
+        <div class="cat-icon-placeholder" style="background:#fef9c3;">🎂</div>
+        <span class="cat-name">Pastelería</span>
+      </div>
+      <div class="cat-item" onclick="filtrarCategoria('Ferretería')">
+        <div class="cat-icon-placeholder" style="background:#fee2e2;">🔧</div>
+        <span class="cat-name">Ferretería</span>
+      </div>
+      <div class="cat-item" onclick="filtrarCategoria('Farmacia')">
+        <div class="cat-icon-placeholder" style="background:#f3e8ff;">💊</div>
+        <span class="cat-name">Farmacia</span>
+      </div>
+      <div class="cat-item" onclick="filtrarCategoria('Restaurante')">
+        <div class="cat-icon-placeholder" style="background:#ffedd5;">🍽️</div>
+        <span class="cat-name">Restaurante</span>
+      </div>
+      <div class="cat-item" onclick="filtrarCategoria('')">
+        <div class="cat-icon-placeholder" style="background:#f3f4f6;">🔍</div>
+        <span class="cat-name">Todo</span>
+      </div>
+    </div>
+
+    <!-- Recomendaciones -->
+    <div class="section-title" style="margin-top:8px;">
+      Recomendaciones <span>›</span>
+    </div>
+    <div class="recomendaciones-scroll" id="recomendaciones"></div>
+
+    <!-- Negocios -->
+    <!--<div class="section-title" style="margin-top:12px;" id="negocios-title">
+      Negocios <span>›</span>
+    </div>
+    <div class="negocios-grid" id="negocios-grid">
+      <div class="loading"><div class="spinner"></div> Cargando...</div>
+    </div>-->
+
+  </div>
+
+  <!-- Bottom nav -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      Inicio
+    </button>
+    <button class="nav-btn" onclick="window.location.href='/cliente/carrito.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/>
+      </svg>
+      Carrito
+    </button>
+    <button class="nav-btn" onclick="window.location.href='/cliente/pedidos.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+      </svg>
+      Pedidos
+    </button>
+    <button class="nav-btn" onclick="window.location.href='/cliente/notificaciones.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>
+      </svg>
+      Alertas
+    </button>
+    <button class="nav-btn" onclick="window.location.href='/cliente/perfil.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+      </svg>
+      Perfil
+    </button>
+  </nav>
+
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  const user = getUser();
+  if (!user || user.tipo !== 'cliente') window.location.href = '/cliente/login.html';
+
+  let todosNegocios = [];
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(async pos => {
+      const { latitude, longitude } = pos.coords;
+      try {
+        const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
+        const data = await r.json();
+        const lugar = data.address?.village || data.address?.town || data.address?.city || data.address?.municipality || 'Tu ubicación';
+        document.getElementById('ubicacion-txt').textContent = lugar;
+      } catch { document.getElementById('ubicacion-txt').textContent = 'Champotón'; }
+    }, () => { document.getElementById('ubicacion-txt').textContent = 'Champotón'; });
+  }
+
+  async function cargarNegocios() {
+    const negocios = await apiGet('/negocios');
+    todosNegocios = negocios;
+    cargarRecomendaciones(negocios);
+    cargarBanners();
+  }
+
+  async function cargarBanners() {
+    const banners = await apiGet('/banners');
+    const wrap = document.getElementById('banner-wrap');
+    if (!banners.length) return;
+
+    let idx = 0;
+    wrap.innerHTML = banners.map((b, i) => `
+      <img src="/uploads/${b.imagen}" 
+        style="width:100%;height:100%;object-fit:cover;display:${i === 0 ? 'block' : 'none'};"
+        id="banner-${i}"/>
+    `).join('');
+
+    if (banners.length > 1) {
+      setInterval(() => {
+        document.getElementById(`banner-${idx}`).style.display = 'none';
+        idx = (idx + 1) % banners.length;
+        document.getElementById(`banner-${idx}`).style.display = 'block';
+      }, 3000);
+    }
+  }
+
+  function renderNegocios(negocios) {
+    const grid = document.getElementById('negocios-grid');
+    if (!negocios.length) {
+      grid.innerHTML = '<p style="padding:20px;color:#6b7280;font-size:13px;">No hay negocios disponibles</p>';
+      return;
+    }
+    grid.innerHTML = negocios.map(n => `
+      <div class="negocio-card" onclick="verProductos(${n.id}, '${n.nombre}')">
+        ${n.imagen
+          ? `<img src="/uploads/${n.imagen}" class="negocio-img" onerror="this.style.display='none'">`
+          : `<div class="negocio-img-placeholder">${getEmoji(n.tipo)}</div>`}
+        <div class="negocio-info">
+          <div class="negocio-name">${n.nombre}</div>
+          <div class="negocio-tipo">${n.tipo}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async function cargarRecomendaciones(negocios) {
+    const cont = document.getElementById('recomendaciones');
+    let prods = [];
+    for (const n of negocios.slice(0, 4)) {
+      const p = await apiGet(`/productos/${n.id}`);
+      prods = prods.concat(p.slice(0, 2).map(pr => ({ ...pr, negocio_nombre: n.nombre, negocio_id: n.id })));
+    }
+    if (!prods.length) { cont.innerHTML = '<p style="padding:10px 0;color:#6b7280;font-size:13px;">Sin productos aún</p>'; return; }
+    cont.innerHTML = prods.map(p => `
+      <div class="prod-card-sm" onclick="verProductos(${p.negocio_id}, '${p.negocio_nombre}')">
+        ${p.imagen
+          ? `<img src="/uploads/${p.imagen}" class="prod-img-sm">`
+          : `<div class="prod-img-placeholder-sm">🛒</div>`}
+        <div class="prod-info-sm">
+          <div class="prod-negocio-sm">${p.negocio_nombre}</div>
+          <div class="prod-name-sm">${p.nombre}</div>
+          <div class="prod-price-sm">$${parseFloat(p.precio).toFixed(2)}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function filtrarCategoria(tipo) {
+    localStorage.setItem('categoria_actual', tipo || 'Todo');
+    window.location.href = '/cliente/negocios.html';
+  }
+
+  function buscar(q) {
+    if (!q) { renderNegocios(todosNegocios); return; }
+    const filtrados = todosNegocios.filter(n =>
+      n.nombre.toLowerCase().includes(q.toLowerCase()) ||
+      n.tipo.toLowerCase().includes(q.toLowerCase())
+    );
+    renderNegocios(filtrados);
+  }
+
+  function verProductos(id, nombre) {
+    localStorage.setItem('negocio_actual', JSON.stringify({ id, nombre }));
+    window.location.href = '/cliente/productos.html';
+  }
+
+  function getEmoji(tipo) {
+    const map = { 'Tienda/Abarrotes': '🏪', 'Frutería': '🍎', 'Pastelería': '🎂', 'Ferretería': '🔧', 'Farmacia': '💊', 'Restaurante': '🍽️' };
+    return map[tipo] || '🏬';
+  }
+
+  cargarNegocios();
+</script>
+</body>
+</html>

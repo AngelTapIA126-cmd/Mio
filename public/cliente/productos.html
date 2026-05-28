@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DriverGo - Productos</title>
+  <link rel="stylesheet" href="/css/global.css"/>
+  <style>
+    .content { padding: 16px 20px 90px; }
+
+    .productos-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .prod-card {
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid #f3f4f6;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      background: #fff;
+    }
+
+    .prod-img {
+      width: 100%;
+      height: 110px;
+      object-fit: cover;
+    }
+
+    .prod-img-placeholder {
+      width: 100%;
+      height: 110px;
+      background: linear-gradient(135deg, #f0f9ff, #dcfce7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+    }
+
+    .prod-info { padding: 10px; }
+
+    .prod-name {
+      font-size: 13px;
+      font-weight: 800;
+      color: #111;
+      margin-bottom: 4px;
+    }
+
+    .prod-price {
+      font-size: 14px;
+      font-weight: 800;
+      color: #2563eb;
+      margin-bottom: 8px;
+    }
+
+    .prod-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-agregar {
+      flex: 1;
+      padding: 7px 6px;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-agregar:hover { background: #1d4ed8; }
+
+    .qty-control {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: #f3f4f6;
+      border-radius: 8px;
+      padding: 4px 6px;
+    }
+
+    .qty-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 800;
+      color: #374151;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+
+    .qty-btn:hover { background: #e5e7eb; }
+
+    .qty-num {
+      font-size: 13px;
+      font-weight: 800;
+      color: #111;
+      min-width: 18px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <button class="back-btn" onclick="history.back()">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M19 12H5M12 5l-7 7 7 7"/>
+      </svg>
+    </button>
+    <span class="header-title" id="negocio-titulo">Productos</span>
+    <div style="width:30px"></div>
+  </div>
+
+  <!-- Search -->
+  <div class="search-bar">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2">
+      <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/>
+    </svg>
+    <input type="text" placeholder="Buscar" oninput="filtrarProductos(this.value)"/>
+  </div>
+
+  <div class="content">
+    <div class="productos-grid" id="productos-grid">
+      <div class="loading"><div class="spinner"></div> Cargando...</div>
+    </div>
+  </div>
+
+  <!-- Bottom nav -->
+  <nav class="bottom-nav">
+    <button class="nav-btn" onclick="window.location.href='/cliente/home.html'">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      Inicio
+    </button>
+    <button class="nav-btn active" onclick="window.location.href='/cliente/carrito.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/>
+      </svg>
+      Carrito
+    </button>
+    <button class="nav-btn" onclick="window.location.href='/cliente/pedidos.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+      </svg>
+      Pedidos
+    </button>
+    <button class="nav-btn" onclick="window.location.href='/cliente/notificaciones.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>
+      </svg>
+      Alertas
+    </button>
+    <button class="nav-btn" onclick="window.location.href='/cliente/home.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+      </svg>
+      Perfil
+    </button>
+  </nav>
+
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  const user = getUser();
+  if (!user || user.tipo !== 'cliente') window.location.href = '/cliente/login.html';
+
+  const negocio = JSON.parse(localStorage.getItem('negocio_actual') || '{}');
+  document.getElementById('negocio-titulo').textContent = negocio.nombre || 'Productos';
+
+  let todosProductos = [];
+  let carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
+
+  async function cargarProductos() {
+    const prods = await apiGet(`/productos/${negocio.id}`);
+    todosProductos = prods;
+    renderProductos(prods);
+  }
+
+  function renderProductos(prods) {
+    const grid = document.getElementById('productos-grid');
+    if (!prods.length) {
+      grid.innerHTML = '<p style="color:#6b7280;font-size:13px;padding:20px 0;">No hay productos disponibles</p>';
+      return;
+    }
+    grid.innerHTML = prods.map(p => {
+      const enCarrito = carrito.find(c => c.producto_id === p.id);
+      const qty = enCarrito ? enCarrito.cantidad : 0;
+      return `
+        <div class="prod-card" id="card-${p.id}">
+          ${p.imagen
+            ? `<img src="/uploads/${p.imagen}" class="prod-img" onerror="this.style.display='none'">`
+            : `<div class="prod-img-placeholder">🛒</div>`}
+          <div class="prod-info">
+            <div class="prod-name">${p.nombre}</div>
+            <div class="prod-price">$${parseFloat(p.precio).toFixed(2)}</div>
+            <div class="prod-actions" id="actions-${p.id}">
+              ${qty === 0
+                ? `<button class="btn-agregar" onclick="agregarAlCarrito(${p.id}, '${p.nombre}', ${p.precio}, ${negocio.id}, '${negocio.nombre}')">Agregar al carrito</button>`
+                : `<div class="qty-control">
+                    <button class="qty-btn" onclick="cambiarCantidad(${p.id}, -1)">−</button>
+                    <span class="qty-num" id="qty-${p.id}">${qty}</span>
+                    <button class="qty-btn" onclick="cambiarCantidad(${p.id}, 1)">+</button>
+                  </div>`
+              }
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function agregarAlCarrito(id, nombre, precio, negocio_id, negocio_nombre) {
+    // Verificar que todos los items sean del mismo negocio
+    if (carrito.length > 0 && carrito[0].negocio_id !== negocio_id) {
+      if (!confirm('Tu carrito tiene productos de otro negocio. ¿Deseas vaciarlo y agregar este?')) return;
+      carrito = [];
+    }
+    carrito.push({ producto_id: id, nombre, precio, cantidad: 1, negocio_id, negocio_nombre });
+    guardarCarrito();
+    renderProductos(todosProductos);
+  }
+
+  function cambiarCantidad(id, delta) {
+    const idx = carrito.findIndex(c => c.producto_id === id);
+    if (idx === -1) return;
+    carrito[idx].cantidad += delta;
+    if (carrito[idx].cantidad <= 0) carrito.splice(idx, 1);
+    guardarCarrito();
+    renderProductos(todosProductos);
+  }
+
+  function guardarCarrito() {
+    localStorage.setItem('carrito', JSON.stringify(carrito));
+  }
+
+  function filtrarProductos(q) {
+    if (!q) { renderProductos(todosProductos); return; }
+    renderProductos(todosProductos.filter(p =>
+      p.nombre.toLowerCase().includes(q.toLowerCase())
+    ));
+  }
+
+  cargarProductos();
+</script>
+</body>
+</html>

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DriverGo - Perfil Negocio</title>
+  <link rel="stylesheet" href="/css/global.css"/>
+  <style>
+    .content { padding: 20px 20px 90px; }
+
+    .perfil-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 28px 20px;
+      background: linear-gradient(135deg, #dcfce7, #dbeafe);
+      border-radius: 16px;
+      margin-bottom: 20px;
+    }
+
+    .perfil-avatar {
+      width: 90px;
+      height: 90px;
+      border-radius: 16px;
+      object-fit: cover;
+      margin-bottom: 12px;
+      border: 3px solid #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .perfil-avatar-placeholder {
+      width: 90px;
+      height: 90px;
+      border-radius: 16px;
+      background: #16a34a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      margin-bottom: 12px;
+      border: 3px solid #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .perfil-nombre {
+      font-family: 'Poppins', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      color: #111;
+      margin-bottom: 4px;
+      text-align: center;
+    }
+
+    .perfil-tipo {
+      font-size: 13px;
+      color: #16a34a;
+      font-weight: 700;
+      background: #dcfce7;
+      padding: 3px 12px;
+      border-radius: 20px;
+      margin-bottom: 4px;
+    }
+
+    .perfil-since {
+      font-size: 12px;
+      color: #6b7280;
+      font-weight: 600;
+    }
+
+    .info-card {
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid #f3f4f6;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .info-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .info-item:last-child { border-bottom: none; }
+
+    .info-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .info-icon.green { background: #dcfce7; }
+    .info-icon.blue { background: #dbeafe; }
+    .info-icon.orange { background: #ffedd5; }
+    .info-icon.purple { background: #f3e8ff; }
+
+    .info-content { flex: 1; }
+
+    .info-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+    }
+
+    .info-valor {
+      font-size: 15px;
+      font-weight: 800;
+      color: #111;
+    }
+
+    .btn-logout {
+      width: 100%;
+      padding: 15px;
+      background: #fee2e2;
+      color: #dc2626;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-logout:hover { background: #fecaca; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <button class="back-btn" onclick="history.back()">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M19 12H5M12 5l-7 7 7 7"/>
+      </svg>
+    </button>
+    <span class="header-title">Mi Perfil</span>
+    <div style="width:30px"></div>
+  </div>
+
+  <div class="content">
+
+    <div class="perfil-header" id="perfil-header">
+      <div class="loading"><div class="spinner"></div></div>
+    </div>
+
+    <div class="info-card" id="info-card">
+      <div class="loading"><div class="spinner"></div> Cargando...</div>
+    </div>
+
+    <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
+
+  </div>
+
+  <!-- Bottom nav -->
+  <nav class="bottom-nav">
+    <button class="nav-btn" onclick="window.location.href='/negocio/home.html'">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      Inicio
+    </button>
+    <button class="nav-btn" onclick="window.location.href='/negocio/notificaciones.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 01-3.46 0"/>
+      </svg>
+      Pedidos
+    </button>
+    <button class="nav-btn active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+      </svg>
+      Perfil
+    </button>
+  </nav>
+
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  const user = getUser();
+  if (!user || user.tipo !== 'negocio') window.location.href = '/negocio/login.html';
+
+  async function cargarPerfil() {
+    const perfil = await apiGet('/negocios/perfil');
+
+    document.getElementById('perfil-header').innerHTML = `
+      ${perfil.imagen
+        ? `<img src="/uploads/${perfil.imagen}" class="perfil-avatar"/>`
+        : `<div class="perfil-avatar-placeholder">🏪</div>`}
+      <div class="perfil-nombre">${perfil.nombre}</div>
+      <span class="perfil-tipo">${perfil.tipo}</span>
+      <div class="perfil-since">Miembro desde ${formatDate(perfil.created_at)}</div>
+    `;
+
+    document.getElementById('info-card').innerHTML = `
+      <div class="info-item">
+        <div class="info-icon green">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </div>
+        <div class="info-content">
+          <div class="info-label">Nombre del negocio</div>
+          <div class="info-valor">${perfil.nombre}</div>
+        </div>
+      </div>
+
+      <div class="info-item">
+        <div class="info-icon blue">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2">
+            <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.67A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92v2z"/>
+          </svg>
+        </div>
+        <div class="info-content">
+          <div class="info-label">Teléfono</div>
+          <div class="info-valor">${perfil.telefono}</div>
+        </div>
+      </div>
+
+      <div class="info-item">
+        <div class="info-icon orange">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+        </div>
+        <div class="info-content">
+          <div class="info-label">Dirección</div>
+          <div class="info-valor">${perfil.direccion}</div>
+        </div>
+      </div>
+
+      <div class="info-item">
+        <div class="info-icon purple">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2">
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+          </svg>
+        </div>
+        <div class="info-content">
+          <div class="info-label">Total de productos</div>
+          <div class="info-valor">${perfil.total_productos} producto${perfil.total_productos !== 1 ? 's' : ''}</div>
+        </div>
+      </div>
+
+      <div class="info-item">
+        <div class="info-icon green">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
+            <path d="M9 11l3 3L22 4"/>
+            <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+          </svg>
+        </div>
+        <div class="info-content">
+          <div class="info-label">Total de pedidos</div>
+          <div class="info-valor">${perfil.total_pedidos} pedido${perfil.total_pedidos !== 1 ? 's' : ''}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function logout() {
+    clearSession();
+    window.location.href = '/index.html';
+  }
+
+  cargarPerfil();
+</script>
+</body>
+</html>

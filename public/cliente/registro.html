@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DriverGo - Crear Cuenta</title>
+  <link rel="stylesheet" href="/css/global.css"/>
+</head>
+<body>
+<div class="app">
+  <div class="auth-screen">
+
+    <div class="auth-logo">
+      <div class="auth-logo-row">
+        <img src="/images/LOGO_DRIVERGO.png" style="height:60px;width:auto;"/>
+      </div>
+      <h1 class="auth-title">Crea una cuenta</h1>
+      <p class="auth-subtitle">Regístrate para disfrutar de este servicio</p>
+    </div>
+
+    <div id="error-msg" class="error-msg"></div>
+
+    <label class="input-label">Ingresa tu nombre completo</label>
+    <div class="input-row">
+      <input type="text" id="nombres" class="input-field" placeholder="Nombres"/>
+      <input type="text" id="apellidos" class="input-field" placeholder="Apellidos"/>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Ingresa tu número de teléfono</label>
+      <input type="tel" id="telefono" class="input-field" placeholder="Ej. 999 120 4532"/>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Crea una contraseña</label>
+      <input type="password" id="password" class="input-field" placeholder="••••••••••••"/>
+    </div>
+
+    <button class="btn btn-blue" id="btn-registro" onclick="registro()">Continuar</button>
+
+    <div class="auth-footer">
+      ¿Ya tienes cuenta? <a href="/cliente/login.html">Iniciar Sesión</a>
+    </div>
+
+    <p class="auth-terms">
+      Al hacer clic en continuar, aceptas nuestros
+      <a href="#">Términos de servicio</a> y <a href="#">Política de privacidad</a>
+    </p>
+
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  async function registro() {
+    const nombres = document.getElementById('nombres').value.trim();
+    const apellidos = document.getElementById('apellidos').value.trim();
+    const telefono = document.getElementById('telefono').value.trim();
+    const password = document.getElementById('password').value.trim();
+    hideError('error-msg');
+
+    if (!nombres || !apellidos || !telefono || !password) {
+      showError('error-msg', 'Por favor llena todos los campos');
+      return;
+    }
+
+    if (password.length < 6) {
+      showError('error-msg', 'La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
+    const btn = document.getElementById('btn-registro');
+    btn.textContent = 'Cargando...';
+    btn.disabled = true;
+
+    const res = await apiPost('/clientes/registro', { nombres, apellidos, telefono, password });
+
+    if (res.ok) {
+      saveSession(res.token, { id: res.id, nombres: res.nombres, tipo: 'cliente' });
+      window.location.href = '/cliente/home.html';
+    } else {
+      showError('error-msg', res.error || 'Error al crear cuenta');
+      btn.textContent = 'Continuar';
+      btn.disabled = false;
+    }
+  }
+</script>
+</body>
+</html>

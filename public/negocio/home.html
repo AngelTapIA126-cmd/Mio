@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DriverGo - Negocio</title>
+  <link rel="stylesheet" href="/css/global.css"/>
+  <style>
+    .content { padding: 16px 20px 90px; }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px 0;
+    }
+
+    .topbar-search {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #f3f4f6;
+      border-radius: 12px;
+      padding: 10px 14px;
+      margin-right: 12px;
+    }
+
+    .topbar-search input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+    }
+
+    .logo-icon-sm { width: 36px; height: 36px; }
+
+    .productos-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .prod-card {
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid #f3f4f6;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      background: #fff;
+    }
+
+    .prod-img {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+    }
+
+    .prod-img-placeholder {
+      width: 100%;
+      height: 100px;
+      background: linear-gradient(135deg, #dcfce7, #dbeafe);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+    }
+
+    .prod-info { padding: 10px; }
+
+    .prod-name {
+      font-size: 13px;
+      font-weight: 800;
+      color: #111;
+      margin-bottom: 4px;
+    }
+
+    .prod-price {
+      font-size: 13px;
+      font-weight: 800;
+      color: #16a34a;
+      margin-bottom: 8px;
+    }
+
+    .prod-btns {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-editar {
+      flex: 1;
+      padding: 6px;
+      background: #f3f4f6;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #374151;
+      transition: background 0.2s;
+    }
+
+    .btn-editar:hover { background: #e5e7eb; }
+
+    .btn-eliminar {
+      flex: 1;
+      padding: 6px;
+      background: #fee2e2;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #dc2626;
+      transition: background 0.2s;
+    }
+
+    .btn-eliminar:hover { background: #fecaca; }
+
+    .btn-agregar-prod {
+      padding: 7px 14px;
+      background: #16a34a;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-agregar-prod:hover { background: #15803d; }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      gap: 12px;
+      color: #6b7280;
+    }
+
+    .empty-state p { font-size: 15px; font-weight: 700; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2">
+        <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/>
+      </svg>
+      <input type="text" placeholder="Buscar" oninput="filtrar(this.value)"/>
+    </div>
+    <img src="/images/ICONO_DRIVERGO.png" style="height:36px;width:auto;"/>
+    </svg>
+  </div>
+
+  <div class="content">
+    <div class="section-title">
+      Mis productos
+      <button class="btn-agregar-prod" onclick="window.location.href='/negocio/agregar-producto.html'">
+        Añadir nuevo producto
+      </button>
+    </div>
+
+    <div class="productos-grid" id="productos-grid">
+      <div class="loading"><div class="spinner"></div> Cargando...</div>
+    </div>
+  </div>
+
+  <!-- Bottom nav -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      Inicio
+    </button>
+    <button class="nav-btn" onclick="window.location.href='/negocio/notificaciones.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 01-3.46 0"/>
+      </svg>
+      Pedidos
+    </button>
+    <button class="nav-btn" onclick="logout()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+      </svg>
+      Perfil
+    </button>
+  </nav>
+
+</div>
+
+<!-- Toast eliminar -->
+<div class="overlay" id="overlay"></div>
+<div class="toast" id="toast">
+  <div class="toast-icon">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5">
+      <path d="M20 6L9 17l-5-5"/>
+    </svg>
+  </div>
+  <span class="toast-title" id="toast-title">Producto eliminado correctamente</span>
+  <button class="btn btn-green" id="toast-aceptar" style="margin-top:8px;padding:10px 28px;width:auto;" onclick="hideToast()">Aceptar</button>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  const user = getUser();
+  if (!user || user.tipo !== 'negocio') window.location.href = '/negocio/login.html';
+
+  let todosProductos = [];
+
+  async function cargarProductos() {
+    const prods = await apiGet(`/productos/${user.id}`);
+    todosProductos = prods;
+    renderProductos(prods);
+  }
+
+  function renderProductos(prods) {
+    const grid = document.getElementById('productos-grid');
+    if (!prods.length) {
+      grid.innerHTML = `
+        <div class="empty-state" style="grid-column:1/-1">
+          <p>Sin productos aún</p>
+          <button class="btn btn-green" onclick="window.location.href='/negocio/agregar-producto.html'">
+            Agregar primer producto
+          </button>
+        </div>`;
+      return;
+    }
+    grid.innerHTML = prods.map(p => `
+      <div class="prod-card">
+        ${p.imagen
+          ? `<img src="/uploads/${p.imagen}" class="prod-img" onerror="this.style.display='none'">`
+          : `<div class="prod-img-placeholder">🛒</div>`}
+        <div class="prod-info">
+          <div class="prod-name">${p.nombre}</div>
+          <div class="prod-price">$${parseFloat(p.precio).toFixed(2)}</div>
+          <div class="prod-btns">
+            <button class="btn-editar" onclick="editar(${p.id})">Editar</button>
+            <button class="btn-eliminar" onclick="eliminar(${p.id})">Eliminar</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function filtrar(q) {
+    if (!q) { renderProductos(todosProductos); return; }
+    renderProductos(todosProductos.filter(p =>
+      p.nombre.toLowerCase().includes(q.toLowerCase())
+    ));
+  }
+
+  function editar(id) {
+    localStorage.setItem('producto_editar', id);
+    window.location.href = '/negocio/editar-producto.html';
+  }
+
+  async function eliminar(id) {
+    if (!confirm('¿Seguro que deseas eliminar este producto?')) return;
+    const res = await apiDelete(`/productos/${id}`);
+    if (res.ok) {
+      showToast('Producto eliminado correctamente');
+      cargarProductos();
+    }
+  }
+
+  function logout() {
+    window.location.href = '/negocio/perfil.html';
+  }
+
+  cargarProductos();
+</script>
+</body>
+</html>

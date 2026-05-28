@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DriverGo - Admin</title>
+  <link rel="stylesheet" href="/css/global.css"/>
+  <style>
+    body { background: #111; }
+    .app { background: #111; }
+
+    .auth-screen { padding: 60px 28px 40px; }
+
+    .auth-logo-name { color: #fff !important; }
+
+    .auth-title { color: #fff; }
+
+    .input-field {
+      background: #1f2937;
+      border-color: #374151;
+      color: #fff;
+    }
+
+    .input-field::placeholder { color: #6b7280; }
+    .input-field:focus { border-color: #2563eb; }
+
+    .input-label { color: #9ca3af; }
+
+    .admin-badge {
+      display: inline-block;
+      background: #2563eb;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .error-msg {
+      background: #450a0a;
+      border-color: #dc2626;
+      color: #fca5a5;
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="auth-screen">
+
+    <div class="auth-logo">
+      <div class="auth-logo-row">
+        <img src="/images/LOGO_DRIVERGO.png" style="height:52px;width:auto;"/>
+      </div>
+      <span class="admin-badge">⚡ Panel Administrador</span>
+      <h1 class="auth-title">Iniciar sesión</h1>
+    </div>
+
+    <div id="error-msg" class="error-msg"></div>
+
+    <div class="input-group">
+      <label class="input-label">Usuario</label>
+      <input type="text" id="usuario" class="input-field" placeholder="admin"/>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Contraseña</label>
+      <input type="password" id="password" class="input-field" placeholder="••••••••••••"/>
+    </div>
+
+    <button class="btn btn-blue" id="btn-login" onclick="login()">Ingresar</button>
+
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  const user = getUser();
+  if (user && user.tipo === 'admin') window.location.href = '/admin/dashboard.html';
+
+  async function login() {
+    const usuario = document.getElementById('usuario').value.trim();
+    const password = document.getElementById('password').value.trim();
+    hideError('error-msg');
+
+    if (!usuario || !password) {
+      showError('error-msg', 'Por favor llena todos los campos');
+      return;
+    }
+
+    const btn = document.getElementById('btn-login');
+    btn.textContent = 'Cargando...';
+    btn.disabled = true;
+
+    const res = await apiPost('/admin/login', { usuario, password });
+
+    if (res.ok) {
+      saveSession(res.token, { id: res.id, nombre: res.nombre, tipo: 'admin' });
+      window.location.href = '/admin/dashboard.html';
+    } else {
+      showError('error-msg', res.error || 'Error al iniciar sesión');
+      btn.textContent = 'Ingresar';
+      btn.disabled = false;
+    }
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+</script>
+</body>
+</html>

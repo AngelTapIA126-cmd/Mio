@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DriverGo - Negocios</title>
+  <link rel="stylesheet" href="/css/global.css"/>
+  <style>
+    .content { padding: 16px 20px 90px; }
+
+    .negocios-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .negocio-card {
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid #f3f4f6;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      cursor: pointer;
+      transition: transform 0.2s;
+      background: #fff;
+    }
+
+    .negocio-card:active { transform: scale(0.97); }
+
+    .negocio-img {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+      background: #f3f4f6;
+    }
+
+    .negocio-img-placeholder {
+      width: 100%;
+      height: 100px;
+      background: linear-gradient(135deg, #dbeafe, #dcfce7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+    }
+
+    .negocio-info { padding: 10px 10px 12px; }
+
+    .negocio-name {
+      font-size: 13px;
+      font-weight: 800;
+      color: #111;
+      margin-bottom: 2px;
+    }
+
+    .negocio-tipo {
+      font-size: 11px;
+      color: #6b7280;
+      font-weight: 600;
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 60px 20px;
+      gap: 12px;
+      color: #6b7280;
+    }
+
+    .empty-state p { font-size: 15px; font-weight: 700; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <button class="back-btn" onclick="history.back()">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M19 12H5M12 5l-7 7 7 7"/>
+      </svg>
+    </button>
+    <span class="header-title" id="header-titulo">Negocios</span>
+    <div style="width:30px"></div>
+  </div>
+
+  <!-- Search -->
+  <div class="search-bar">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2">
+      <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/>
+    </svg>
+    <input type="text" placeholder="Buscar negocio" oninput="filtrar(this.value)"/>
+  </div>
+
+  <div class="content">
+    <div class="negocios-grid" id="negocios-grid">
+      <div class="loading" style="grid-column:1/-1"><div class="spinner"></div> Cargando...</div>
+    </div>
+  </div>
+
+  <!-- Bottom nav -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="window.location.href='/cliente/home.html'">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      Inicio
+    </button>
+    <button class="nav-btn" onclick="window.location.href='/cliente/carrito.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/>
+      </svg>
+      Carrito
+    </button>
+    <button class="nav-btn" onclick="window.location.href='/cliente/pedidos.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+      </svg>
+      Pedidos
+    </button>
+    <button class="nav-btn" onclick="window.location.href='/cliente/notificaciones.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>
+      </svg>
+      Alertas
+    </button>
+    <button class="nav-btn" onclick="window.location.href='/cliente/perfil.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+      </svg>
+      Perfil
+    </button>
+  </nav>
+
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  const user = getUser();
+  if (!user || user.tipo !== 'cliente') window.location.href = '/cliente/login.html';
+
+  const categoria = localStorage.getItem('categoria_actual') || 'Todo';
+  document.getElementById('header-titulo').textContent = categoria === 'Todo' ? 'Negocios' : categoria;
+
+  let todosNegocios = [];
+
+  async function cargarNegocios() {
+    const negocios = await apiGet('/negocios');
+    todosNegocios = categoria === 'Todo'
+      ? negocios
+      : negocios.filter(n => n.tipo === categoria);
+    renderNegocios(todosNegocios);
+  }
+
+  function renderNegocios(negocios) {
+    const grid = document.getElementById('negocios-grid');
+    if (!negocios.length) {
+      grid.innerHTML = `
+        <div class="empty-state" style="grid-column:1/-1">
+          <p>Sin negocios en esta categoría</p>
+        </div>`;
+      return;
+    }
+    grid.innerHTML = negocios.map(n => `
+      <div class="negocio-card" onclick="verProductos(${n.id}, '${n.nombre}')">
+        ${n.imagen
+          ? `<img src="/uploads/${n.imagen}" class="negocio-img" onerror="this.outerHTML='<div class=\'negocio-img-placeholder\'>${getEmoji(n.tipo)}</div>'">`
+          : `<div class="negocio-img-placeholder">${getEmoji(n.tipo)}</div>`}
+        <div class="negocio-info">
+          <div class="negocio-name">${n.nombre}</div>
+          <div class="negocio-tipo">${n.tipo}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function filtrar(q) {
+    if (!q) { renderNegocios(todosNegocios); return; }
+    renderNegocios(todosNegocios.filter(n =>
+      n.nombre.toLowerCase().includes(q.toLowerCase())
+    ));
+  }
+
+  function verProductos(id, nombre) {
+    localStorage.setItem('negocio_actual', JSON.stringify({ id, nombre }));
+    window.location.href = '/cliente/productos.html';
+  }
+
+  function getEmoji(tipo) {
+    const map = { 'Tienda/Abarrotes': '🏪', 'Frutería': '🍎', 'Pastelería': '🎂', 'Ferretería': '🔧', 'Farmacia': '💊', 'Restaurante': '🍽️' };
+    return map[tipo] || '🏬';
+  }
+
+  cargarNegocios();
+</script>
+</body>
+</html>

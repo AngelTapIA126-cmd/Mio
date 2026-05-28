@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DriverGo - Detalle Pedido</title>
+  <link rel="stylesheet" href="/css/global.css"/>
+  <style>
+    .content { padding: 16px 20px 100px; }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 12px 0;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .info-label {
+      font-size: 12px;
+      font-weight: 800;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      min-width: 90px;
+    }
+
+    .info-valor {
+      font-size: 13px;
+      font-weight: 700;
+      color: #111;
+      text-align: right;
+      flex: 1;
+    }
+
+    .info-valor.muted { color: #9ca3af; }
+    .info-valor small { display: block; font-size: 11px; color: #6b7280; font-weight: 600; }
+
+    .tabla-header {
+      display: grid;
+      grid-template-columns: 60px 1fr auto;
+      gap: 10px;
+      padding: 10px 0 6px;
+      border-bottom: 1px solid #f3f4f6;
+      margin-top: 8px;
+    }
+
+    .tabla-header span {
+      font-size: 11px;
+      font-weight: 800;
+      color: #6b7280;
+      text-transform: uppercase;
+    }
+
+    .item-row {
+      display: grid;
+      grid-template-columns: 60px 1fr auto;
+      gap: 10px;
+      padding: 12px 0;
+      border-bottom: 1px solid #f9fafb;
+      align-items: center;
+    }
+
+    .item-img-placeholder {
+      width: 60px;
+      height: 60px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #dcfce7, #dbeafe);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .item-img {
+      width: 60px;
+      height: 60px;
+      border-radius: 10px;
+      object-fit: cover;
+    }
+
+    .item-info { display: flex; flex-direction: column; gap: 2px; }
+    .item-negocio { font-size: 10px; color: #6b7280; font-weight: 600; }
+    .item-nombre { font-size: 13px; font-weight: 800; color: #111; }
+    .item-desc { font-size: 11px; color: #6b7280; }
+    .item-precio { font-size: 14px; font-weight: 800; color: #111; text-align: right; }
+
+    .resumen { padding: 16px 0; }
+    .resumen-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      font-size: 13px;
+      color: #374151;
+      font-weight: 600;
+    }
+    .resumen-row.total {
+      font-size: 16px;
+      font-weight: 800;
+      color: #111;
+      border-top: 2px solid #f3f4f6;
+      margin-top: 8px;
+      padding-top: 12px;
+    }
+
+    .btn-aceptar {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 40px);
+      max-width: 380px;
+      padding: 16px;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 17px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(37,99,235,0.3);
+      transition: all 0.2s;
+    }
+
+    .btn-aceptar:hover { background: #1d4ed8; }
+    .btn-aceptar:active { transform: translateX(-50%) scale(0.97); }
+    .btn-aceptar:disabled { background: #9ca3af; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <button class="back-btn" onclick="history.back()">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M19 12H5M12 5l-7 7 7 7"/>
+      </svg>
+    </button>
+    <span class="header-title">Nuevo Pedido</span>
+    <div style="width:30px"></div>
+  </div>
+
+  <div class="content" id="content">
+    <div class="loading"><div class="spinner"></div> Cargando...</div>
+  </div>
+
+  <button class="btn-aceptar" id="btn-aceptar" onclick="aceptarPedido()">Aceptar pedido</button>
+
+</div>
+
+<!-- Toast buscando repartidor -->
+<div class="overlay" id="overlay"></div>
+<div class="toast" id="toast">
+  <button class="toast-close" onclick="hideToast()">✕</button>
+  <div class="toast-icon">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M12 6v6l4 2"/>
+    </svg>
+  </div>
+  <span class="toast-title" id="toast-title">Buscando repartidores...</span>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  const user = getUser();
+  if (!user || user.tipo !== 'negocio') window.location.href = '/negocio/login.html';
+
+  const pedidoId = localStorage.getItem('pedido_negocio');
+  if (!pedidoId) window.location.href = '/negocio/notificaciones.html';
+
+  let pedidoData = null;
+
+  async function cargarPedido() {
+    const pedido = await apiGet(`/pedidos/${pedidoId}`);
+    pedidoData = pedido;
+
+    const btn = document.getElementById('btn-aceptar');
+
+    // Si ya fue aceptado cambiar botón
+    if (pedido.estado !== 'pendiente') {
+      btn.textContent = pedido.estado === 'cancelado' ? 'Cancelado' : 'Ya procesado';
+      btn.disabled = true;
+    }
+
+    document.getElementById('content').innerHTML = `
+      <div class="info-row">
+        <span class="info-label">No. de pedido</span>
+        <span class="info-valor">${String(pedido.id).padStart(12, '0')}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">ENTREGA</span>
+        <span class="info-valor">$30.00 <small>Estándar | 10-20 min</small></span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">ENVÍO</span>
+        <span class="info-valor muted">${pedido.direccion_envio}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Tipo de pago</span>
+        <span class="info-valor">Efectivo</span>
+      </div>
+
+      <div class="tabla-header">
+        <span>ARTÍCULOS</span>
+        <span>DESCRIPCIÓN</span>
+        <span>PRECIO</span>
+      </div>
+
+      ${pedido.items.map(item => `
+        <div class="item-row">
+          ${item.imagen
+            ? `<img src="/uploads/${item.imagen}" class="item-img">`
+            : `<div class="item-img-placeholder">🛒</div>`}
+          <div class="item-info">
+            <span class="item-negocio">${pedido.negocio_nombre}</span>
+            <span class="item-nombre">${item.nombre}</span>
+            <span class="item-desc">Cantidad: ${item.cantidad}</span>
+          </div>
+          <span class="item-precio">$${(item.precio_unitario * item.cantidad).toFixed(2)}</span>
+        </div>
+      `).join('')}
+
+      <div class="resumen">
+        <div class="resumen-row">
+          <span>Subtotal (${pedido.items.reduce((s,i) => s+i.cantidad, 0)})</span>
+          <span>$${parseFloat(pedido.subtotal).toFixed(2)}</span>
+        </div>
+        <div class="resumen-row">
+          <span>Total de envío</span>
+          <span>$${parseFloat(pedido.costo_envio).toFixed(2)}</span>
+        </div>
+        <div class="resumen-row">
+          <span>Impuestos</span>
+          <span>$${parseFloat(pedido.impuestos).toFixed(2)}</span>
+        </div>
+        <div class="resumen-row total">
+          <span>Total</span>
+          <span>$${parseFloat(pedido.total).toFixed(2)}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  async function aceptarPedido() {
+    const btn = document.getElementById('btn-aceptar');
+    btn.disabled = true;
+
+    // Mostrar toast buscando repartidores
+    document.getElementById('overlay').classList.add('show');
+    document.getElementById('toast').classList.add('show');
+
+    // Actualizar estado a recibido
+    await apiPut(`/pedidos/${pedidoId}/estado`, { estado: 'recibido' });
+
+    setTimeout(async () => {
+      // Actualizar a buscando repartidor
+      await apiPut(`/pedidos/${pedidoId}/estado`, { estado: 'buscando_repartidor' });
+      hideToast();
+      window.location.href = '/negocio/repartidores.html';
+    }, 2000);
+  }
+
+  cargarPedido();
+</script>
+</body>
+</html>
