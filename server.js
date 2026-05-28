@@ -461,6 +461,17 @@ app.get('/api/admin/stats', authMiddleware, async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// Ruta temporal para crear admin
+app.get('/setup-admin', async (req, res) => {
+  try {
+    const hash = await bcrypt.hash('drivergo2024', 10);
+    await query('DELETE FROM admins WHERE usuario = ?', ['admin']);
+    await query('INSERT INTO admins (nombre, usuario, password) VALUES (?,?,?)', ['Super Admin', 'admin', hash]);
+    res.json({ ok: true, mensaje: 'Admin creado', password: 'drivergo2024' });
+  } catch (err) {
+    res.json({ error: err.message });
+  }
+});
 // ==================== INICIAR SERVIDOR ====================
 app.listen(PORT, () => {
   console.log(`🚀 DriverGo servidor corriendo en http://localhost:${PORT}`);
