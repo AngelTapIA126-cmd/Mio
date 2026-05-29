@@ -178,7 +178,6 @@
 
     const btn = document.getElementById('btn-aceptar');
 
-    // Si ya fue aceptado cambiar botón
     if (pedido.estado !== 'pendiente') {
       btn.textContent = pedido.estado === 'cancelado' ? 'Cancelado' : 'Ya procesado';
       btn.disabled = true;
@@ -211,7 +210,7 @@
       ${pedido.items.map(item => `
         <div class="item-row">
           ${item.imagen
-            ? `<img src="${getImageUrl(item.imagen}" class="item-img">`
+            ? `<img src="${getImageUrl(item.imagen)}" class="item-img">`
             : `<div class="item-img-placeholder">🛒</div>`}
           <div class="item-info">
             <span class="item-negocio">${pedido.negocio_nombre}</span>
@@ -247,15 +246,12 @@
     const btn = document.getElementById('btn-aceptar');
     btn.disabled = true;
 
-    // Mostrar toast buscando repartidores
     document.getElementById('overlay').classList.add('show');
     document.getElementById('toast').classList.add('show');
 
-    // Actualizar estado a recibido
     await apiPut(`/pedidos/${pedidoId}/estado`, { estado: 'recibido' });
 
     setTimeout(async () => {
-      // Actualizar a buscando repartidor
       await apiPut(`/pedidos/${pedidoId}/estado`, { estado: 'buscando_repartidor' });
       hideToast();
       window.location.href = '/negocio/repartidores.html';
