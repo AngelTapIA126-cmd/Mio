@@ -188,7 +188,7 @@
       </svg>
       Pedidos
     </button>
-    <button class="nav-btn" onclick="logout()">
+    <button class="nav-btn" onclick="window.location.href='/negocio/perfil.html'">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
       </svg>
@@ -238,7 +238,7 @@
     grid.innerHTML = prods.map(p => `
       <div class="prod-card">
         ${p.imagen
-          ? `<img src="${getImageUrl(p.imagen}" class="prod-img" onerror="this.style.display='none'">`
+          ? `<img src="/uploads/${p.imagen}" class="prod-img" onerror="this.style.display='none'">`
           : `<div class="prod-img-placeholder">🛒</div>`}
         <div class="prod-info">
           <div class="prod-name">${p.nombre}</div>
