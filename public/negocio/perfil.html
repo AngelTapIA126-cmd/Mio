@@ -195,7 +195,7 @@
 
     document.getElementById('perfil-header').innerHTML = `
       ${perfil.imagen
-        ? `<img src="${getImageUrl(perfil.imagen}" class="perfil-avatar"/>`
+        ? `<img src="${getImageUrl(perfil.imagen)}" class="perfil-avatar"/>`
         : `<div class="perfil-avatar-placeholder">🏪</div>`}
       <div class="perfil-nombre">${perfil.nombre}</div>
       <span class="perfil-tipo">${perfil.tipo}</span>
