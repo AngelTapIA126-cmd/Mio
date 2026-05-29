@@ -90,7 +90,6 @@
 
     .admin-content { padding: 24px; }
 
-    /* Stats */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -103,11 +102,6 @@
       border-radius: 14px;
       padding: 20px;
       border: 1px solid #334155;
-    }
-
-    .stat-icon {
-      font-size: 24px;
-      margin-bottom: 8px;
     }
 
     .stat-valor {
@@ -124,7 +118,6 @@
       font-weight: 600;
     }
 
-    /* Tabla */
     .admin-table-wrap {
       background: #1e293b;
       border-radius: 14px;
@@ -204,7 +197,6 @@
     .btn-toggle.activar { background: #14532d; color: #86efac; }
     .btn-toggle.desactivar { background: #450a0a; color: #fca5a5; }
 
-    /* Banner upload */
     .banner-form {
       background: #1e293b;
       border-radius: 14px;
@@ -304,19 +296,19 @@
       <div>
         <div class="admin-title">Panel Admin</div>
       </div>
-      <span class="admin-badge">⚡ Super Admin</span>
+      <span class="admin-badge">Super Admin</span>
     </div>
     <button class="btn-logout-admin" onclick="logout()">Cerrar sesión</button>
   </div>
 
   <!-- Nav -->
   <div class="admin-nav">
-    <button class="admin-nav-btn active" onclick="cambiarTab('dashboard', this)">📊 Dashboard</button>
-    <button class="admin-nav-btn" onclick="cambiarTab('banners', this)">🖼️ Banners</button>
-    <button class="admin-nav-btn" onclick="cambiarTab('negocios', this)">🏪 Negocios</button>
-    <button class="admin-nav-btn" onclick="cambiarTab('clientes', this)">👥 Clientes</button>
-    <button class="admin-nav-btn" onclick="cambiarTab('repartidores', this)">🛵 Repartidores</button>
-    <button class="admin-nav-btn" onclick="cambiarTab('pedidos', this)">📦 Pedidos</button>
+    <button class="admin-nav-btn active" onclick="cambiarTab('dashboard', this)">Dashboard</button>
+    <button class="admin-nav-btn" onclick="cambiarTab('banners', this)">Banners</button>
+    <button class="admin-nav-btn" onclick="cambiarTab('negocios', this)">Negocios</button>
+    <button class="admin-nav-btn" onclick="cambiarTab('clientes', this)">Clientes</button>
+    <button class="admin-nav-btn" onclick="cambiarTab('repartidores', this)">Repartidores</button>
+    <button class="admin-nav-btn" onclick="cambiarTab('pedidos', this)">Pedidos</button>
   </div>
 
   <div class="admin-content">
@@ -331,7 +323,7 @@
     <!-- Banners -->
     <div class="tab-content" id="tab-banners">
       <div class="banner-form">
-        <div class="banner-form-title">➕ Agregar nuevo banner</div>
+        <div class="banner-form-title">Agregar nuevo banner</div>
         <input type="text" class="admin-input" id="banner-titulo" placeholder="Título del banner (opcional)"/>
         <input type="file" id="banner-imagen" accept="image/*" class="admin-input"/>
         <input type="number" class="admin-input" id="banner-orden" placeholder="Orden (0, 1, 2...)"/>
@@ -340,7 +332,7 @@
 
       <div class="admin-table-wrap">
         <div class="admin-table-header">
-          <span class="admin-table-title">🖼️ Banners activos</span>
+          <span class="admin-table-title">Banners activos</span>
         </div>
         <div class="banners-grid" id="banners-grid" style="padding:16px;">
           <div class="loading"><div class="spinner"></div></div>
@@ -352,7 +344,7 @@
     <div class="tab-content" id="tab-negocios">
       <div class="admin-table-wrap">
         <div class="admin-table-header">
-          <span class="admin-table-title">🏪 Todos los negocios</span>
+          <span class="admin-table-title">Todos los negocios</span>
         </div>
         <div style="overflow-x:auto;">
           <table id="tabla-negocios">
@@ -361,9 +353,9 @@
                 <th>ID</th>
                 <th>Nombre</th>
                 <th>Tipo</th>
-                <th>Teléfono</th>
+                <th>Telefono</th>
                 <th>Estado</th>
-                <th>Acción</th>
+                <th>Accion</th>
               </tr>
             </thead>
             <tbody id="tbody-negocios">
@@ -378,7 +370,7 @@
     <div class="tab-content" id="tab-clientes">
       <div class="admin-table-wrap">
         <div class="admin-table-header">
-          <span class="admin-table-title">👥 Todos los clientes</span>
+          <span class="admin-table-title">Todos los clientes</span>
         </div>
         <div style="overflow-x:auto;">
           <table>
@@ -386,7 +378,7 @@
               <tr>
                 <th>ID</th>
                 <th>Nombre</th>
-                <th>Teléfono</th>
+                <th>Telefono</th>
                 <th>Registro</th>
               </tr>
             </thead>
@@ -402,7 +394,7 @@
     <div class="tab-content" id="tab-repartidores">
       <div class="admin-table-wrap">
         <div class="admin-table-header">
-          <span class="admin-table-title">🛵 Todos los repartidores</span>
+          <span class="admin-table-title">Todos los repartidores</span>
         </div>
         <div style="overflow-x:auto;">
           <table>
@@ -410,10 +402,10 @@
               <tr>
                 <th>ID</th>
                 <th>Nombre</th>
-                <th>Teléfono</th>
-                <th>Vehículo</th>
+                <th>Telefono</th>
+                <th>Vehiculo</th>
                 <th>Estado</th>
-                <th>Acción</th>
+                <th>Accion</th>
               </tr>
             </thead>
             <tbody id="tbody-repartidores">
@@ -428,7 +420,7 @@
     <div class="tab-content" id="tab-pedidos">
       <div class="admin-table-wrap">
         <div class="admin-table-header">
-          <span class="admin-table-title">📦 Todos los pedidos</span>
+          <span class="admin-table-title">Todos los pedidos</span>
         </div>
         <div style="overflow-x:auto;">
           <table>
@@ -479,27 +471,22 @@
     const stats = await apiGet('/admin/stats');
     document.getElementById('stats-grid').innerHTML = `
       <div class="stat-card">
-        <div class="stat-icon">👥</div>
         <div class="stat-valor">${stats.clientes}</div>
         <div class="stat-label">Clientes</div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon">🏪</div>
         <div class="stat-valor">${stats.negocios}</div>
         <div class="stat-label">Negocios</div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon">🛵</div>
         <div class="stat-valor">${stats.repartidores}</div>
         <div class="stat-label">Repartidores</div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon">📦</div>
         <div class="stat-valor">${stats.pedidos}</div>
         <div class="stat-label">Pedidos</div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon">💰</div>
         <div class="stat-valor">$${parseFloat(stats.ingresos).toFixed(0)}</div>
         <div class="stat-label">Ingresos totales</div>
       </div>
@@ -510,14 +497,14 @@
     const banners = await apiGet('/banners');
     const grid = document.getElementById('banners-grid');
     if (!banners.length) {
-      grid.innerHTML = '<p class="empty-admin">Sin banners aún</p>';
+      grid.innerHTML = '<p class="empty-admin">Sin banners aun</p>';
       return;
     }
     grid.innerHTML = banners.map(b => `
       <div class="banner-card">
-        <img src="/uploads/${b.imagen}" class="banner-img"/>
+        <img src="${getImageUrl(b.imagen)}" class="banner-img"/>
         <div class="banner-info">
-          <span class="banner-titulo">${b.titulo || 'Sin título'}</span>
+          <span class="banner-titulo">${b.titulo || 'Sin titulo'}</span>
           <button class="btn-eliminar-banner" onclick="eliminarBanner(${b.id})">Eliminar</button>
         </div>
       </div>
@@ -543,7 +530,7 @@
   }
 
   async function eliminarBanner(id) {
-    if (!confirm('¿Eliminar este banner?')) return;
+    if (!confirm('Eliminar este banner?')) return;
     const res = await apiDelete(`/admin/banners/${id}`);
     if (res.ok) cargarBanners();
   }
@@ -627,7 +614,6 @@
     window.location.href = '/admin/login.html';
   }
 
-  // Cargar dashboard al inicio
   cargarStats();
 </script>
 </body>
