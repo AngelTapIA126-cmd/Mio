@@ -403,7 +403,7 @@
 
     let idx = 0;
     wrap.innerHTML = banners.map((b, i) => `
-      <img src="/uploads/${b.imagen}" 
+      <img src="${getImageUrl(b.imagen}" 
         style="width:100%;height:100%;object-fit:cover;display:${i === 0 ? 'block' : 'none'};"
         id="banner-${i}"/>
     `).join('');
@@ -447,7 +447,7 @@
     cont.innerHTML = prods.map(p => `
       <div class="prod-card-sm" onclick="verProductos(${p.negocio_id}, '${p.negocio_nombre}')">
         ${p.imagen
-          ? `<img src="/uploads/${p.imagen}" class="prod-img-sm">`
+          ? `<img src="${getImageUrl(p.imagen}" class="prod-img-sm">`
           : `<div class="prod-img-placeholder-sm">🛒</div>`}
         <div class="prod-info-sm">
           <div class="prod-negocio-sm">${p.negocio_nombre}</div>

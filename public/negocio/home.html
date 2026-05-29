@@ -238,7 +238,7 @@
     grid.innerHTML = prods.map(p => `
       <div class="prod-card">
         ${p.imagen
-          ? `<img src="/uploads/${p.imagen}" class="prod-img" onerror="this.style.display='none'">`
+          ? `<img src="${getImageUrl(p.imagen}" class="prod-img" onerror="this.style.display='none'">`
           : `<div class="prod-img-placeholder">🛒</div>`}
         <div class="prod-info">
           <div class="prod-name">${p.nombre}</div>
