@@ -130,3 +130,8 @@ function getEstadoLabel(estado) {
   };
   return map[estado] || estado;
 }
+function getImageUrl(imagen) {
+  if (!imagen) return null;
+  if (imagen.startsWith('http')) return imagen;
+  return '/uploads/' + imagen;
+}
