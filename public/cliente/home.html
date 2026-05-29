@@ -48,37 +48,6 @@
       color: #374151;
     }
 
-    .nav-tabs {
-      display: flex;
-      gap: 0;
-      padding: 8px 20px;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-    .nav-tabs::-webkit-scrollbar { display: none; }
-
-    .nav-tab {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 14px;
-      border: none;
-      background: none;
-      font-family: 'Nunito', sans-serif;
-      font-size: 13px;
-      font-weight: 700;
-      color: #6b7280;
-      cursor: pointer;
-      white-space: nowrap;
-      border-bottom: 2px solid transparent;
-      transition: all 0.2s;
-    }
-
-    .nav-tab.active {
-      color: #2563eb;
-      border-bottom-color: #2563eb;
-    }
-
     .banner-wrap {
       margin: 8px 20px;
       border-radius: 14px;
@@ -139,57 +108,6 @@
       color: #374151;
       text-align: center;
       max-width: 64px;
-    }
-
-    .negocios-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      padding: 0 20px;
-    }
-
-    .negocio-card {
-      border-radius: 14px;
-      overflow: hidden;
-      border: 1px solid #f3f4f6;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      cursor: pointer;
-      transition: transform 0.2s;
-      background: #fff;
-    }
-
-    .negocio-card:active { transform: scale(0.97); }
-
-    .negocio-img {
-      width: 100%;
-      height: 90px;
-      object-fit: cover;
-      background: #f3f4f6;
-    }
-
-    .negocio-img-placeholder {
-      width: 100%;
-      height: 90px;
-      background: linear-gradient(135deg, #dbeafe, #dcfce7);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 32px;
-    }
-
-    .negocio-info { padding: 10px 10px 12px; }
-
-    .negocio-name {
-      font-size: 13px;
-      font-weight: 800;
-      color: #111;
-      margin-bottom: 2px;
-    }
-
-    .negocio-tipo {
-      font-size: 11px;
-      color: #6b7280;
-      font-weight: 600;
     }
 
     .recomendaciones-scroll {
@@ -326,14 +244,6 @@
     </div>
     <div class="recomendaciones-scroll" id="recomendaciones"></div>
 
-    <!-- Negocios -->
-    <!--<div class="section-title" style="margin-top:12px;" id="negocios-title">
-      Negocios <span>›</span>
-    </div>
-    <div class="negocios-grid" id="negocios-grid">
-      <div class="loading"><div class="spinner"></div> Cargando...</div>
-    </div>-->
-
   </div>
 
   <!-- Bottom nav -->
@@ -400,14 +310,12 @@
     const banners = await apiGet('/banners');
     const wrap = document.getElementById('banner-wrap');
     if (!banners.length) return;
-
     let idx = 0;
     wrap.innerHTML = banners.map((b, i) => `
-      <img src="${getImageUrl(b.imagen}" 
+      <img src="${getImageUrl(b.imagen)}"
         style="width:100%;height:100%;object-fit:cover;display:${i === 0 ? 'block' : 'none'};"
         id="banner-${i}"/>
     `).join('');
-
     if (banners.length > 1) {
       setInterval(() => {
         document.getElementById(`banner-${idx}`).style.display = 'none';
@@ -415,25 +323,6 @@
         document.getElementById(`banner-${idx}`).style.display = 'block';
       }, 3000);
     }
-  }
-
-  function renderNegocios(negocios) {
-    const grid = document.getElementById('negocios-grid');
-    if (!negocios.length) {
-      grid.innerHTML = '<p style="padding:20px;color:#6b7280;font-size:13px;">No hay negocios disponibles</p>';
-      return;
-    }
-    grid.innerHTML = negocios.map(n => `
-      <div class="negocio-card" onclick="verProductos(${n.id}, '${n.nombre}')">
-        ${n.imagen
-          ? `<img src="${getImageUrl(n.imagen)}" class="negocio-img" onerror="this.style.display='none'">`
-          : `<div class="negocio-img-placeholder">${getEmoji(n.tipo)}</div>`}
-        <div class="negocio-info">
-          <div class="negocio-name">${n.nombre}</div>
-          <div class="negocio-tipo">${n.tipo}</div>
-        </div>
-      </div>
-    `).join('');
   }
 
   async function cargarRecomendaciones(negocios) {
@@ -447,7 +336,7 @@
     cont.innerHTML = prods.map(p => `
       <div class="prod-card-sm" onclick="verProductos(${p.negocio_id}, '${p.negocio_nombre}')">
         ${p.imagen
-          ? `<img src="${getImageUrl(p.imagen}" class="prod-img-sm">`
+          ? `<img src="${getImageUrl(p.imagen)}" class="prod-img-sm">`
           : `<div class="prod-img-placeholder-sm">🛒</div>`}
         <div class="prod-info-sm">
           <div class="prod-negocio-sm">${p.negocio_nombre}</div>
@@ -464,12 +353,9 @@
   }
 
   function buscar(q) {
-    if (!q) { renderNegocios(todosNegocios); return; }
-    const filtrados = todosNegocios.filter(n =>
-      n.nombre.toLowerCase().includes(q.toLowerCase()) ||
-      n.tipo.toLowerCase().includes(q.toLowerCase())
-    );
-    renderNegocios(filtrados);
+    if (!q) return;
+    localStorage.setItem('categoria_actual', 'Todo');
+    window.location.href = '/cliente/negocios.html';
   }
 
   function verProductos(id, nombre) {
