@@ -92,7 +92,7 @@ app.post('/api/clientes/registro', async (req, res) => {
       'INSERT INTO clientes (nombres, apellidos, telefono, password) VALUES (?,?,?,?)',
       [nombres, apellidos, telefono, hash]
     );
-    const token = jwt.sign({ id: result.insertId, tipo: 'cliente' }, SECRET);
+    const token = jwt.sign({ id: result.insertId, tipo: 'cliente' }, SECRET, { expiresIn: '30d' });
     res.json({ ok: true, token, id: result.insertId, nombres });
   } catch (err) {
     res.status(400).json({ error: 'El teléfono ya está registrado' });
@@ -106,7 +106,7 @@ app.post('/api/clientes/login', async (req, res) => {
     if (!rows.length) return res.status(400).json({ error: 'Teléfono o contraseña incorrectos' });
     const ok = await bcrypt.compare(password, rows[0].password);
     if (!ok) return res.status(400).json({ error: 'Teléfono o contraseña incorrectos' });
-    const token = jwt.sign({ id: rows[0].id, tipo: 'cliente' }, SECRET);
+    const token = jwt.sign({ id: rows[0].id, tipo: 'cliente' }, SECRET, { expiresIn: '30d' });
     res.json({ ok: true, token, id: rows[0].id, nombres: rows[0].nombres });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -135,7 +135,7 @@ app.post('/api/negocios/registro', upload.single('imagen'), async (req, res) => 
       'INSERT INTO negocios (nombre, tipo, direccion, telefono, password, imagen) VALUES (?,?,?,?,?,?)',
       [nombre, tipo, direccion, telefono, hash, imagen]
     );
-    const token = jwt.sign({ id: result.insertId, tipo: 'negocio' }, SECRET);
+    const token = jwt.sign({ id: result.insertId, tipo: 'negocio' }, SECRET, { expiresIn: '30d' });
     res.json({ ok: true, token, id: result.insertId, nombre });
   } catch (err) {
     res.status(400).json({ error: 'El teléfono ya está registrado' });
@@ -149,7 +149,7 @@ app.post('/api/negocios/login', async (req, res) => {
     if (!rows.length) return res.status(400).json({ error: 'Teléfono o contraseña incorrectos' });
     const ok = await bcrypt.compare(password, rows[0].password);
     if (!ok) return res.status(400).json({ error: 'Teléfono o contraseña incorrectos' });
-    const token = jwt.sign({ id: rows[0].id, tipo: 'negocio' }, SECRET);
+    const token = jwt.sign({ id: rows[0].id, tipo: 'negocio' }, SECRET, { expiresIn: '30d' });
     res.json({ ok: true, token, id: rows[0].id, nombre: rows[0].nombre });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -238,7 +238,7 @@ app.post('/api/repartidores/registro', upload.fields([
       'INSERT INTO repartidores (nombres, apellidos, telefono, password, tipo_vehiculo, licencia_frente, licencia_trasera) VALUES (?,?,?,?,?,?,?)',
       [nombres, apellidos, telefono, hash, tipo_vehiculo, licencia_frente, licencia_trasera]
     );
-    const token = jwt.sign({ id: result.insertId, tipo: 'repartidor' }, SECRET);
+    const token = jwt.sign({ id: result.insertId, tipo: 'repartidor' }, SECRET, { expiresIn: '30d' });
     res.json({ ok: true, token, id: result.insertId, nombres });
   } catch (err) {
     res.status(400).json({ error: 'El teléfono ya está registrado' });
@@ -252,7 +252,7 @@ app.post('/api/repartidores/login', async (req, res) => {
     if (!rows.length) return res.status(400).json({ error: 'Teléfono o contraseña incorrectos' });
     const ok = await bcrypt.compare(password, rows[0].password);
     if (!ok) return res.status(400).json({ error: 'Teléfono o contraseña incorrectos' });
-    const token = jwt.sign({ id: rows[0].id, tipo: 'repartidor' }, SECRET);
+    const token = jwt.sign({ id: rows[0].id, tipo: 'repartidor' }, SECRET, { expiresIn: '30d' });
     res.json({ ok: true, token, id: rows[0].id, nombres: rows[0].nombres });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -383,7 +383,7 @@ app.post('/api/admin/login', async (req, res) => {
     if (!rows.length) return res.status(400).json({ error: 'Usuario o contraseña incorrectos' });
     const ok = await bcrypt.compare(password, rows[0].password);
     if (!ok) return res.status(400).json({ error: 'Usuario o contraseña incorrectos' });
-    const token = jwt.sign({ id: rows[0].id, tipo: 'admin' }, SECRET);
+    const token = jwt.sign({ id: rows[0].id, tipo: 'admin' }, SECRET, { expiresIn: '30d' });
     res.json({ ok: true, token, id: rows[0].id, nombre: rows[0].nombre });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
