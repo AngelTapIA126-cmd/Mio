@@ -47,11 +47,7 @@
     }
 
     .btn-dar:hover { background: #e5e7eb; }
-
-    .btn-dar:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
+    .btn-dar:disabled { opacity: 0.4; cursor: not-allowed; }
 
     .empty-state {
       display: flex;
@@ -74,13 +70,7 @@
         <path d="M19 12H5M12 5l-7 7 7 7"/>
       </svg>
     </button>
-    <div class="auth-logo-row" style="gap:6px;">
-      <svg width="24" height="24" viewBox="0 0 56 56" fill="none">
-        <path d="M28 4C18.06 4 10 12.06 10 22C10 35 28 52 28 52C28 52 46 35 46 22C46 12.06 37.94 4 28 4Z" fill="#16a34a"/>
-        <circle cx="28" cy="22" r="8" fill="white"/>
-      </svg>
-      <span class="header-title">DriverGo</span>
-    </div>
+    <img src="/images/ICONO_DRIVERGO.PNG" style="height:32px;width:auto;"/>
     <div style="width:30px"></div>
   </div>
 
@@ -104,7 +94,7 @@
       </svg>
       Pedidos
     </button>
-    <button class="nav-btn" onclick="logout()">
+    <button class="nav-btn" onclick="window.location.href='/negocio/perfil.html'">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
       </svg>
@@ -175,11 +165,6 @@
         window.location.href = '/negocio/proceso-pedido.html';
       });
     }
-  }
-
-  function logout() {
-    clearSession();
-    window.location.href = '/index.html';
   }
 
   cargarRepartidores();
