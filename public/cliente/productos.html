@@ -202,7 +202,7 @@
       return `
         <div class="prod-card" id="card-${p.id}">
           ${p.imagen
-            ? `<img src="${getImageUrl(p.imagen}" class="prod-img" onerror="this.style.display='none'">`
+            ? `<img src="${getImageUrl(p.imagen)}" class="prod-img" onerror="this.style.display='none'">`
             : `<div class="prod-img-placeholder">🛒</div>`}
           <div class="prod-info">
             <div class="prod-name">${p.nombre}</div>
