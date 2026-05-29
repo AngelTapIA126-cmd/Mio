@@ -5,10 +5,34 @@ const multer = require('multer');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const mysql = require('mysql2');
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const SECRET = 'drivergo_secret_2024';
+
+// Supabase
+const supabase = createClient(
+  process.env.SUPABASE_URL || '',
+  process.env.SUPABASE_KEY || ''
+);
+
+// Función para subir imagen a Supabase
+async function subirImagen(file) {
+  if (!file) return null;
+  const filename = Date.now() + path.extname(file.originalname);
+  const { data, error } = await supabase.storage
+    .from('uploads')
+    .upload(filename, file.buffer, {
+      contentType: file.mimetype,
+      upsert: false
+    });
+  if (error) throw error;
+  const { data: urlData } = supabase.storage
+    .from('uploads')
+    .getPublicUrl(filename);
+  return urlData.publicUrl;
+}
 
 // Middlewares
 app.use(cors());
@@ -30,11 +54,8 @@ db.connect(err => {
   console.log('✅ Base de datos MySQL conectada');
 });
 
-// Multer config
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, 'uploads/'),
-  filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
-});
+// Multer config - memoria
+const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 // Middleware auth
@@ -109,7 +130,7 @@ app.post('/api/negocios/registro', upload.single('imagen'), async (req, res) => 
     return res.status(400).json({ error: 'Todos los campos son requeridos' });
   try {
     const hash = await bcrypt.hash(password, 10);
-    const imagen = req.file ? req.file.filename : null;
+    const imagen = await subirImagen(req.file);
     const result = await query(
       'INSERT INTO negocios (nombre, tipo, direccion, telefono, password, imagen) VALUES (?,?,?,?,?,?)',
       [nombre, tipo, direccion, telefono, hash, imagen]
@@ -171,8 +192,8 @@ app.get('/api/productos/:negocio_id', async (req, res) => {
 app.post('/api/productos', authMiddleware, upload.single('imagen'), async (req, res) => {
   const { nombre, precio, descripcion, unidades } = req.body;
   const negocio_id = req.user.id;
-  const imagen = req.file ? req.file.filename : null;
   try {
+    const imagen = await subirImagen(req.file);
     const result = await query(
       'INSERT INTO productos (negocio_id, nombre, precio, descripcion, unidades, imagen) VALUES (?,?,?,?,?,?)',
       [negocio_id, nombre, precio, descripcion, unidades, imagen]
@@ -183,8 +204,8 @@ app.post('/api/productos', authMiddleware, upload.single('imagen'), async (req, 
 
 app.put('/api/productos/:id', authMiddleware, upload.single('imagen'), async (req, res) => {
   const { nombre, precio, descripcion, unidades, imagen_actual } = req.body;
-  const imagen = req.file ? req.file.filename : imagen_actual;
   try {
+    const imagen = req.file ? await subirImagen(req.file) : imagen_actual;
     await query(
       'UPDATE productos SET nombre=?, precio=?, descripcion=?, unidades=?, imagen=? WHERE id=?',
       [nombre, precio, descripcion, unidades, imagen, req.params.id]
@@ -211,8 +232,8 @@ app.post('/api/repartidores/registro', upload.fields([
     return res.status(400).json({ error: 'Todos los campos son requeridos' });
   try {
     const hash = await bcrypt.hash(password, 10);
-    const licencia_frente = req.files?.licencia_frente?.[0]?.filename || null;
-    const licencia_trasera = req.files?.licencia_trasera?.[0]?.filename || null;
+    const licencia_frente = await subirImagen(req.files?.licencia_frente?.[0]);
+    const licencia_trasera = await subirImagen(req.files?.licencia_trasera?.[0]);
     const result = await query(
       'INSERT INTO repartidores (nombres, apellidos, telefono, password, tipo_vehiculo, licencia_frente, licencia_trasera) VALUES (?,?,?,?,?,?,?)',
       [nombres, apellidos, telefono, hash, tipo_vehiculo, licencia_frente, licencia_trasera]
@@ -426,9 +447,9 @@ app.get('/api/banners', async (req, res) => {
 
 app.post('/api/admin/banners', authMiddleware, upload.single('imagen'), async (req, res) => {
   const { titulo, negocio_id, orden } = req.body;
-  const imagen = req.file ? req.file.filename : null;
-  if (!imagen) return res.status(400).json({ error: 'La imagen es requerida' });
   try {
+    const imagen = await subirImagen(req.file);
+    if (!imagen) return res.status(400).json({ error: 'La imagen es requerida' });
     const result = await query(
       'INSERT INTO banners (titulo, imagen, negocio_id, orden) VALUES (?,?,?,?)',
       [titulo, imagen, negocio_id || null, orden || 0]
