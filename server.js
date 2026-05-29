@@ -483,6 +483,6 @@ app.get('/api/admin/stats', authMiddleware, async (req, res) => {
 });
 
 // ==================== INICIAR SERVIDOR ====================
-app.listen(PORT, () => {
-  console.log(`🚀 DriverGo servidor corriendo en http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 DriverGo servidor corriendo en puerto ${PORT}`);
 });
