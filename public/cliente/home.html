@@ -426,7 +426,7 @@
     grid.innerHTML = negocios.map(n => `
       <div class="negocio-card" onclick="verProductos(${n.id}, '${n.nombre}')">
         ${n.imagen
-          ? `<img src="/uploads/${n.imagen}" class="negocio-img" onerror="this.style.display='none'">`
+          ? `<img src="${getImageUrl(n.imagen)}" class="negocio-img" onerror="this.style.display='none'">`
           : `<div class="negocio-img-placeholder">${getEmoji(n.tipo)}</div>`}
         <div class="negocio-info">
           <div class="negocio-name">${n.nombre}</div>
