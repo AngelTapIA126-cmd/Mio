@@ -515,7 +515,7 @@
     }
     grid.innerHTML = banners.map(b => `
       <div class="banner-card">
-        <img src="${getImageUrl(b.imagen}" class="banner-img"/>
+        <img src="/uploads/${b.imagen}" class="banner-img"/>
         <div class="banner-info">
           <span class="banner-titulo">${b.titulo || 'Sin título'}</span>
           <button class="btn-eliminar-banner" onclick="eliminarBanner(${b.id})">Eliminar</button>
