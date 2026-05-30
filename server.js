@@ -330,8 +330,8 @@ app.get('/api/pedidos/negocio', authMiddleware, async (req, res) => {
 app.get('/api/pedidos/disponibles', authMiddleware, async (req, res) => {
   try {
     const rows = await query(
-      'SELECT p.*, c.nombres as cliente_nombre, n.nombre as negocio_nombre FROM pedidos p JOIN clientes c ON p.cliente_id = c.id JOIN negocios n ON p.negocio_id = n.id WHERE p.estado = ? AND p.repartidor_id IS NULL ORDER BY p.created_at DESC',
-      ['buscando_repartidor']
+      'SELECT p.*, c.nombres as cliente_nombre, n.nombre as negocio_nombre FROM pedidos p JOIN clientes c ON p.cliente_id = c.id JOIN negocios n ON p.negocio_id = n.id WHERE p.estado = ? AND p.repartidor_id = ? ORDER BY p.created_at DESC',
+      ['en_proceso', req.user.id]
     );
     res.json(rows);
   } catch (err) { res.status(500).json({ error: err.message }); }
