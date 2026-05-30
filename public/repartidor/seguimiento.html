@@ -6,7 +6,7 @@
   <title>DriverGo - Seguimiento</title>
   <link rel="stylesheet" href="/css/global.css"/>
   <style>
-    .content { padding: 20px 20px 100px; }
+    .content { padding: 20px 20px 160px; }
 
     .timeline-wrap {
       background: #fff;
@@ -19,7 +19,7 @@
 
     .btn-entregado {
       position: fixed;
-      bottom: 20px;
+      bottom: 80px;
       left: 50%;
       transform: translateX(-50%);
       width: calc(100% - 40px);
@@ -35,6 +35,7 @@
       cursor: pointer;
       box-shadow: 0 4px 20px rgba(0,0,0,0.2);
       transition: all 0.2s;
+      z-index: 99;
     }
 
     .btn-entregado:hover { background: #000; }
@@ -92,11 +93,11 @@
   if (!pedidoId) window.location.href = '/repartidor/home.html';
 
   const pasos = [
-    { key: 'pendiente',           label: 'Pendiente' },
-    { key: 'recibido',            label: 'Tu pedido fue recibido por el negocio' },
-    { key: 'en_proceso',          label: 'Aceptado por repartidor' },
-    { key: 'en_camino',           label: 'Tu pedido está en camino' },
-    { key: 'entregado',           label: 'Tu pedido fue entregado' },
+    { key: 'pendiente',  label: 'Pendiente' },
+    { key: 'recibido',   label: 'Tu pedido fue recibido por el negocio' },
+    { key: 'en_proceso', label: 'Aceptado por repartidor' },
+    { key: 'en_camino',  label: 'Tu pedido está en camino' },
+    { key: 'entregado',  label: 'Tu pedido fue entregado' },
   ];
 
   const orden = ['pendiente','recibido','buscando_repartidor','en_proceso','en_camino','entregado'];
