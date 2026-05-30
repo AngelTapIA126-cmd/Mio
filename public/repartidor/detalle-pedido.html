@@ -199,7 +199,7 @@
       ${pedido.items.map(item => `
         <div class="item-row">
           ${item.imagen
-            ? `<img src="${getImageUrl(item.imagen}" class="item-img">`
+            ? `<img src="${getImageUrl(item.imagen)}" class="item-img">`
             : `<div class="item-img-placeholder">🛒</div>`}
           <div class="item-info">
             <span class="item-negocio">${pedido.negocio_nombre}</span>
