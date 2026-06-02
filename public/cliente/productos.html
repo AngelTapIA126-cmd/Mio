@@ -56,29 +56,6 @@
       margin-bottom: 8px;
     }
 
-    .btn-agregar {
-      width: 100%;
-      padding: 7px 6px;
-      background: #2563eb;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-family: 'Nunito', sans-serif;
-      font-size: 11px;
-      font-weight: 800;
-      cursor: pointer;
-      transition: background 0.2s;
-      margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-    }
-
-    .btn-agregar:hover { background: #1d4ed8; }
-    .btn-agregar.en-carrito { background: #16a34a; }
-    .btn-agregar.en-carrito:hover { background: #15803d; }
-
     .qty-control {
       display: flex;
       align-items: center;
@@ -88,6 +65,7 @@
       border-radius: 8px;
       padding: 4px 6px;
       width: 100%;
+      margin-bottom: 6px;
     }
 
     .qty-btn {
@@ -115,6 +93,24 @@
       min-width: 24px;
       text-align: center;
     }
+
+    .btn-agregar {
+      width: 100%;
+      padding: 7px 6px;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-agregar:hover { background: #1d4ed8; }
+    .btn-agregar.en-carrito { background: #16a34a; }
+    .btn-agregar.en-carrito:hover { background: #15803d; }
 
     .btn-ir-pagar {
       position: fixed;
@@ -155,7 +151,6 @@
     <div style="width:30px"></div>
   </div>
 
-  <!-- Search -->
   <div class="search-bar">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2">
       <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/>
@@ -173,7 +168,6 @@
     IR A PAGAR
   </button>
 
-  <!-- Bottom nav -->
   <nav class="bottom-nav">
     <button class="nav-btn" onclick="window.location.href='/cliente/home.html'">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
@@ -218,9 +212,14 @@
   let todosProductos = [];
   let carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
 
+  // Cantidades locales por producto (antes de agregar al carrito)
+  let cantidadesLocales = {};
+
   async function cargarProductos() {
     const prods = await apiGet(`/productos/${negocio.id}`);
     todosProductos = prods;
+    // Inicializar cantidades locales en 1
+    prods.forEach(p => { cantidadesLocales[p.id] = 1; });
     renderProductos(prods);
   }
 
@@ -233,7 +232,7 @@
 
     grid.innerHTML = prods.map(p => {
       const enCarrito = carrito.find(c => c.producto_id === p.id);
-      const qty = enCarrito ? enCarrito.cantidad : 0;
+      const qty = cantidadesLocales[p.id] || 1;
       return `
         <div class="prod-card" id="card-${p.id}">
           ${p.imagen
@@ -242,21 +241,44 @@
           <div class="prod-info">
             <div class="prod-name">${p.nombre}</div>
             <div class="prod-price">$${parseFloat(p.precio).toFixed(2)}</div>
-            <button class="btn-agregar ${qty > 0 ? 'en-carrito' : ''}"
-              onclick="agregarAlCarrito(${p.id}, '${p.nombre}', ${p.precio}, ${negocio.id}, '${negocio.nombre}', '${p.imagen || ''}')">
-              ${qty > 0 ? '✓ Agregado' : 'Agregar al carrito'}
-            </button>
             <div class="qty-control">
-              <button class="qty-btn" onclick="cambiarCantidad(${p.id}, -1)">−</button>
+              <button class="qty-btn" onclick="cambiarCantidadLocal(${p.id}, -1)">−</button>
               <span class="qty-num" id="qty-${p.id}">${qty}</span>
-              <button class="qty-btn" onclick="cambiarCantidad(${p.id}, 1)">+</button>
+              <button class="qty-btn" onclick="cambiarCantidadLocal(${p.id}, 1)">+</button>
             </div>
+            <button class="btn-agregar ${enCarrito ? 'en-carrito' : ''}"
+              onclick="agregarAlCarrito(${p.id}, '${p.nombre}', ${p.precio}, ${negocio.id}, '${negocio.nombre}', '${p.imagen || ''}')">
+              ${enCarrito ? '✓ En carrito' : 'Agregar al carrito'}
+            </button>
           </div>
         </div>
       `;
     }).join('');
 
     actualizarBotonPagar();
+  }
+
+  function cambiarCantidadLocal(id, delta) {
+    cantidadesLocales[id] = (cantidadesLocales[id] || 1) + delta;
+    if (cantidadesLocales[id] < 1) cantidadesLocales[id] = 1;
+    const el = document.getElementById(`qty-${id}`);
+    if (el) el.textContent = cantidadesLocales[id];
+  }
+
+  function agregarAlCarrito(id, nombre, precio, negocio_id, negocio_nombre, imagen) {
+    if (carrito.length > 0 && carrito[0].negocio_id !== negocio_id) {
+      if (!confirm('Tu carrito tiene productos de otro negocio. ¿Deseas vaciarlo y agregar este?')) return;
+      carrito = [];
+    }
+    const cantidad = cantidadesLocales[id] || 1;
+    const existente = carrito.find(c => c.producto_id === id);
+    if (existente) {
+      existente.cantidad = cantidad;
+    } else {
+      carrito.push({ producto_id: id, nombre, precio, cantidad, negocio_id, negocio_nombre, imagen });
+    }
+    guardarCarrito();
+    renderProductos(todosProductos);
   }
 
   function actualizarBotonPagar() {
@@ -268,40 +290,6 @@
     } else {
       btn.style.display = 'none';
     }
-  }
-
-  function agregarAlCarrito(id, nombre, precio, negocio_id, negocio_nombre, imagen) {
-    if (carrito.length > 0 && carrito[0].negocio_id !== negocio_id) {
-      if (!confirm('Tu carrito tiene productos de otro negocio. ¿Deseas vaciarlo y agregar este?')) return;
-      carrito = [];
-    }
-    const existente = carrito.find(c => c.producto_id === id);
-    if (!existente) {
-      carrito.push({ producto_id: id, nombre, precio, cantidad: 1, negocio_id, negocio_nombre, imagen });
-    }
-    guardarCarrito();
-    renderProductos(todosProductos);
-  }
-
-  function cambiarCantidad(id, delta) {
-    const existente = carrito.find(c => c.producto_id === id);
-    if (delta > 0 && !existente) {
-      const prod = todosProductos.find(p => p.id === id);
-      if (prod) {
-        if (carrito.length > 0 && carrito[0].negocio_id !== negocio.id) {
-          if (!confirm('Tu carrito tiene productos de otro negocio. ¿Deseas vaciarlo?')) return;
-          carrito = [];
-        }
-        carrito.push({ producto_id: id, nombre: prod.nombre, precio: prod.precio, cantidad: 1, negocio_id: negocio.id, negocio_nombre: negocio.nombre, imagen: prod.imagen });
-      }
-    } else if (existente) {
-      existente.cantidad += delta;
-      if (existente.cantidad <= 0) {
-        carrito = carrito.filter(c => c.producto_id !== id);
-      }
-    }
-    guardarCarrito();
-    renderProductos(todosProductos);
   }
 
   function guardarCarrito() {
