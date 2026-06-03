@@ -35,8 +35,6 @@
       font-size: 14px;
     }
 
-    .logo-icon-sm { width: 36px; height: 36px; }
-
     .productos-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -83,10 +81,7 @@
       margin-bottom: 8px;
     }
 
-    .prod-btns {
-      display: flex;
-      gap: 6px;
-    }
+    .prod-btns { display: flex; gap: 6px; }
 
     .btn-editar {
       flex: 1;
@@ -145,12 +140,28 @@
     }
 
     .empty-state p { font-size: 15px; font-weight: 700; }
+
+    .nav-badge {
+      position: absolute;
+      top: 4px;
+      right: 8px;
+      background: #dc2626;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 800;
+      min-width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 3px;
+    }
   </style>
 </head>
 <body>
 <div class="app">
 
-  <!-- Topbar -->
   <div class="topbar">
     <div class="topbar-search">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2">
@@ -159,7 +170,6 @@
       <input type="text" placeholder="Buscar" oninput="filtrar(this.value)"/>
     </div>
     <img src="/images/ICONO_DRIVERGO.PNG" style="height:36px;width:auto;"/>
-    </svg>
   </div>
 
   <div class="content">
@@ -169,23 +179,22 @@
         Añadir nuevo producto
       </button>
     </div>
-
     <div class="productos-grid" id="productos-grid">
       <div class="loading"><div class="spinner"></div> Cargando...</div>
     </div>
   </div>
 
-  <!-- Bottom nav -->
   <nav class="bottom-nav">
     <button class="nav-btn active">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
       Inicio
     </button>
-    <button class="nav-btn" onclick="window.location.href='/negocio/notificaciones.html'">
+    <button class="nav-btn" id="btn-pedidos" onclick="window.location.href='/negocio/notificaciones.html'" style="position:relative;">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
         <path d="M13.73 21a2 2 0 01-3.46 0"/>
       </svg>
+      <span id="badge-pedidos" class="nav-badge" style="display:none;">0</span>
       Pedidos
     </button>
     <button class="nav-btn" onclick="window.location.href='/negocio/perfil.html'">
@@ -198,7 +207,6 @@
 
 </div>
 
-<!-- Toast eliminar -->
 <div class="overlay" id="overlay"></div>
 <div class="toast" id="toast">
   <div class="toast-icon">
@@ -221,6 +229,20 @@
     const prods = await apiGet(`/productos/${user.id}`);
     todosProductos = prods;
     renderProductos(prods);
+  }
+
+  async function verificarPedidosPendientes() {
+    try {
+      const pedidos = await apiGet('/pedidos/negocio');
+      const pendientes = pedidos.filter(p => p.estado === 'pendiente').length;
+      const badge = document.getElementById('badge-pedidos');
+      if (pendientes > 0) {
+        badge.style.display = 'flex';
+        badge.textContent = pendientes;
+      } else {
+        badge.style.display = 'none';
+      }
+    } catch(e) {}
   }
 
   function renderProductos(prods) {
@@ -273,11 +295,9 @@
     }
   }
 
-  function logout() {
-    window.location.href = '/negocio/perfil.html';
-  }
-
   cargarProductos();
+  verificarPedidosPendientes();
+  setInterval(verificarPedidosPendientes, 8000);
 </script>
 </body>
 </html>

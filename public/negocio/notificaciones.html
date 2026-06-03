@@ -17,6 +17,11 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     }
 
+    .pedido-card.nuevo {
+      border-left: 4px solid #16a34a;
+      background: #f0fdf4;
+    }
+
     .pedido-nombre {
       font-size: 15px;
       font-weight: 800;
@@ -28,8 +33,24 @@
       font-size: 12px;
       color: #9ca3af;
       font-weight: 600;
-      margin-bottom: 10px;
+      margin-bottom: 6px;
     }
+
+    .pedido-estado {
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      display: inline-block;
+    }
+
+    .estado-pendiente { background: #fef9c3; color: #92400e; }
+    .estado-recibido { background: #dbeafe; color: #1e40af; }
+    .estado-buscando_repartidor { background: #f3e8ff; color: #6b21a8; }
+    .estado-en_proceso { background: #dcfce7; color: #14532d; }
+    .estado-en_camino { background: #dbeafe; color: #1e40af; }
+    .estado-entregado { background: #dcfce7; color: #14532d; }
 
     .btn-ver {
       padding: 8px 20px;
@@ -56,6 +77,22 @@
     }
 
     .empty-state p { font-size: 15px; font-weight: 700; }
+
+    .nav-badge {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: #dc2626;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 800;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
   </style>
 </head>
 <body>
@@ -78,20 +115,19 @@
     </div>
   </div>
 
-  <!-- Bottom nav -->
   <nav class="bottom-nav">
     <button class="nav-btn" onclick="window.location.href='/negocio/home.html'">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
       Inicio
     </button>
-    <button class="nav-btn active">
+    <button class="nav-btn active" style="position:relative;">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
         <path d="M13.73 21a2 2 0 01-3.46 0"/>
       </svg>
       Pedidos
     </button>
-    <button class="nav-btn" onclick="logout()">
+    <button class="nav-btn" onclick="window.location.href='/negocio/perfil.html'">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
       </svg>
@@ -106,22 +142,53 @@
   const user = getUser();
   if (!user || user.tipo !== 'negocio') window.location.href = '/negocio/login.html';
 
+  let ultimoConteo = 0;
+
+  const estadoLabels = {
+    'pendiente': 'Nuevo pedido',
+    'recibido': 'Pedido recibido',
+    'buscando_repartidor': 'Buscando repartidor',
+    'en_proceso': 'En proceso',
+    'en_camino': 'En camino',
+    'entregado': 'Entregado',
+    'cancelado': 'Cancelado'
+  };
+
   function tiempoRelativo(fecha) {
     const diff = Math.floor((Date.now() - new Date(fecha)) / 1000);
-    if (diff < 60) return 'Hace 1 minuto';
+    if (diff < 60) return 'Hace un momento';
     if (diff < 3600) return `Hace ${Math.floor(diff/60)} minuto(s)`;
     if (diff < 86400) return `Hace ${Math.floor(diff/3600)} hora(s)`;
     return `Hace ${Math.floor(diff/86400)} día(s)`;
+  }
+
+  function sonar() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.connect(g);
+      g.connect(ctx.destination);
+      o.frequency.value = 880;
+      g.gain.value = 0.3;
+      o.start();
+      setTimeout(() => o.stop(), 300);
+    } catch(e) {}
   }
 
   async function cargarPedidos() {
     const pedidos = await apiGet('/pedidos/negocio');
     const list = document.getElementById('pedidos-list');
 
-    // Pedidos pendientes primero
     const pendientes = pedidos.filter(p => p.estado === 'pendiente');
     const otros = pedidos.filter(p => p.estado !== 'pendiente');
     const ordenados = [...pendientes, ...otros];
+
+    // Detectar nuevos pedidos pendientes
+    if (pendientes.length > ultimoConteo && ultimoConteo > 0) {
+      sonar();
+    }
+    ultimoConteo = pendientes.length;
 
     if (!ordenados.length) {
       list.innerHTML = `
@@ -135,10 +202,11 @@
     }
 
     list.innerHTML = ordenados.map(p => `
-      <div class="pedido-card">
+      <div class="pedido-card ${p.estado === 'pendiente' ? 'nuevo' : ''}">
         <div class="pedido-nombre">${p.cliente_nombre} ${p.cliente_apellidos}</div>
         <div class="pedido-tiempo">${tiempoRelativo(p.created_at)}</div>
-        <button class="btn-ver" onclick="verPedido(${p.id})">Ver pedido</button>
+        <span class="pedido-estado estado-${p.estado}">${estadoLabels[p.estado] || p.estado}</span><br/>
+        <button class="btn-ver" style="margin-top:8px;" onclick="verPedido(${p.id})">Ver pedido</button>
       </div>
     `).join('');
   }
@@ -146,11 +214,6 @@
   function verPedido(id) {
     localStorage.setItem('pedido_negocio', id);
     window.location.href = '/negocio/detalle-pedido.html';
-  }
-
-  function logout() {
-    clearSession();
-    window.location.href = '/index.html';
   }
 
   cargarPedidos();
