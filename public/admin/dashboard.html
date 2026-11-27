@@ -307,7 +307,6 @@
     <button class="admin-nav-btn" onclick="cambiarTab('banners', this)">Banners</button>
     <button class="admin-nav-btn" onclick="cambiarTab('negocios', this)">Negocios</button>
     <button class="admin-nav-btn" onclick="cambiarTab('clientes', this)">Clientes</button>
-    <button class="admin-nav-btn" onclick="cambiarTab('repartidores', this)">Repartidores</button>
     <button class="admin-nav-btn" onclick="cambiarTab('pedidos', this)">Pedidos</button>
   </div>
 
@@ -390,32 +389,6 @@
       </div>
     </div>
 
-    <!-- Repartidores -->
-    <div class="tab-content" id="tab-repartidores">
-      <div class="admin-table-wrap">
-        <div class="admin-table-header">
-          <span class="admin-table-title">Todos los repartidores</span>
-        </div>
-        <div style="overflow-x:auto;">
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Telefono</th>
-                <th>Vehiculo</th>
-                <th>Estado</th>
-                <th>Accion</th>
-              </tr>
-            </thead>
-            <tbody id="tbody-repartidores">
-              <tr><td colspan="6" class="empty-admin">Cargando...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
     <!-- Pedidos -->
     <div class="tab-content" id="tab-pedidos">
       <div class="admin-table-wrap">
@@ -463,7 +436,6 @@
     else if (tab === 'banners') cargarBanners();
     else if (tab === 'negocios') cargarNegocios();
     else if (tab === 'clientes') cargarClientes();
-    else if (tab === 'repartidores') cargarRepartidores();
     else if (tab === 'pedidos') cargarPedidos();
   }
 
@@ -477,10 +449,6 @@
       <div class="stat-card">
         <div class="stat-valor">${stats.negocios}</div>
         <div class="stat-label">Negocios</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-valor">${stats.repartidores}</div>
-        <div class="stat-label">Repartidores</div>
       </div>
       <div class="stat-card">
         <div class="stat-valor">${stats.pedidos}</div>
@@ -569,30 +537,6 @@
         <td>${formatDate(c.created_at)}</td>
       </tr>
     `).join('');
-  }
-
-  async function cargarRepartidores() {
-    const reps = await apiGet('/admin/repartidores');
-    document.getElementById('tbody-repartidores').innerHTML = reps.map(r => `
-      <tr>
-        <td>${r.id}</td>
-        <td>${r.nombres} ${r.apellidos}</td>
-        <td>${r.telefono}</td>
-        <td>${r.tipo_vehiculo}</td>
-        <td><span class="badge ${r.disponible ? 'badge-activo' : 'badge-inactivo'}">${r.disponible ? 'Disponible' : 'No disponible'}</span></td>
-        <td>
-          <button class="btn-toggle ${r.disponible ? 'desactivar' : 'activar'}"
-            onclick="toggleRepartidor(${r.id}, ${r.disponible ? 0 : 1})">
-            ${r.disponible ? 'Desactivar' : 'Activar'}
-          </button>
-        </td>
-      </tr>
-    `).join('');
-  }
-
-  async function toggleRepartidor(id, disponible) {
-    await apiPut(`/admin/repartidores/${id}`, { disponible });
-    cargarRepartidores();
   }
 
   async function cargarPedidos() {

@@ -105,19 +105,30 @@
 
   const pedidoData = JSON.parse(localStorage.getItem('pedido_seguimiento') || '{}');
 
-  const pasos = [
-    { key: 'pendiente',            label: 'Pendiente' },
-    { key: 'recibido',             label: 'Tu pedido fue recibido por el negocio' },
-    { key: 'buscando_repartidor',  label: 'Buscando repartidor' },
-    { key: 'en_proceso',           label: 'Tu pedido está en proceso' },
-    { key: 'en_camino',            label: 'Tu pedido está en camino' },
-    { key: 'entregado',            label: 'Tu pedido fue entregado' },
-  ];
+  // Pasos según el tipo de entrega. Recoger se salta todo lo del repartidor.
+  const PASOS = {
+    domicilio: [
+      { key: 'pendiente',            label: 'Pendiente' },
+      { key: 'recibido',             label: 'Tu pedido fue recibido por el negocio' },
+      { key: 'buscando_repartidor',  label: 'Buscando repartidor' },
+      { key: 'en_proceso',           label: 'Tu pedido está en proceso' },
+      { key: 'en_camino',            label: 'Tu pedido está en camino' },
+      { key: 'entregado',            label: 'Tu pedido fue entregado' },
+    ],
+    recoger: [
+      { key: 'pendiente',     label: 'Pendiente' },
+      { key: 'recibido',      label: 'Tu pedido fue recibido por el negocio' },
+      { key: 'en_proceso',    label: 'Tu pedido está en proceso' },
+      { key: 'listo_recoger', label: 'Tu pedido está listo, ya puedes pasar por él' },
+      { key: 'entregado',     label: 'Recogiste tu pedido' },
+    ],
+  };
 
-  const orden = ['pendiente','recibido','buscando_repartidor','en_proceso','en_camino','entregado'];
+  let tipoEntrega = pedidoData.tipo_entrega === 'recoger' ? 'recoger' : 'domicilio';
 
   function renderTimeline(estado) {
-    const idx = orden.indexOf(estado);
+    const pasos = PASOS[tipoEntrega];
+    const idx = pasos.findIndex(p => p.key === estado);
     const tl = document.getElementById('timeline');
     tl.innerHTML = pasos.map((p, i) => {
       const done = i < idx;
@@ -133,9 +144,10 @@
   async function actualizarEstado() {
     if (!pedidoData.id) return;
     const pedido = await apiGet(`/pedidos/${pedidoData.id}`);
+    if (pedido.error) return;
+    tipoEntrega = pedido.tipo_entrega === 'recoger' ? 'recoger' : 'domicilio';
     if (pedido.estado === 'entregado') {
-      localStorage.setItem('pedido_seguimiento', JSON.stringify({ ...pedidoData, estado: 'entregado' }));
-      window.location.href = '/cliente/pedido-entregado.html';
+      abrirPedidoCliente(pedido);
       return;
     }
     renderTimeline(pedido.estado);

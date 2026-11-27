@@ -117,6 +117,7 @@
     'buscando_repartidor': 'Buscando repartidor',
     'en_proceso': 'Pedido en proceso',
     'en_camino': 'Pedido en camino',
+    'listo_recoger': 'Pedido listo para recoger',
     'entregado': 'Pedido entregado',
     'cancelado': 'Pedido cancelado'
   };
@@ -129,8 +130,11 @@
     return `Hace ${Math.floor(diff/86400)} día(s)`;
   }
 
+  let ultimosPedidos = [];
+
   async function cargarNotificaciones() {
     const pedidos = await apiGet('/pedidos/cliente');
+    ultimosPedidos = pedidos;
     const list = document.getElementById('notif-list');
 
     if (!pedidos.length) {
@@ -146,7 +150,7 @@
     }
 
     list.innerHTML = pedidos.map(p => `
-      <div class="notif-card" onclick="verPedido(${p.id}, '${p.estado}', '${p.direccion_envio}', '${p.updated_at}')">
+      <div class="notif-card" onclick="verPedido(${p.id})">
         <div class="notif-tiempo">${tiempoRelativo(p.updated_at)}</div>
         <div class="notif-titulo">${estadoLabels[p.estado] || p.estado}</div>
         <div class="notif-sub">${p.negocio_nombre} · $${parseFloat(p.total).toFixed(2)}</div>
@@ -157,13 +161,10 @@
     `).join('');
   }
 
-  function verPedido(id, estado, direccion, fecha) {
-    localStorage.setItem('pedido_seguimiento', JSON.stringify({ id, estado, direccion, fecha }));
-    if (estado === 'entregado') {
-      window.location.href = '/cliente/pedido-entregado.html';
-    } else {
-      window.location.href = '/cliente/seguimiento.html';
-    }
+  // Domicilio sin repartidor abre el chat; lo demás, seguimiento o entregado
+  function verPedido(id) {
+    const p = ultimosPedidos.find(x => x.id === id);
+    if (p) abrirPedidoCliente(p);
   }
 
   cargarNotificaciones();

@@ -37,6 +37,10 @@
 
     <button class="btn btn-blue" id="btn-login" onclick="login()">Continuar</button>
 
+    <!-- Solo en desarrollo (localhost): entra con la cuenta de prueba -->
+    <button class="btn" id="btn-login-rapido" onclick="loginRapido()"
+      style="display:none; margin-top:10px; background:#eee; color:#333;">⚡ Entrar rápido (cliente de prueba)</button>
+
     <div class="auth-footer">
       ¿No tienes cuenta? <a href="/cliente/registro.html">Crear cuenta</a>
     </div>
@@ -79,6 +83,16 @@
       btn.textContent = 'Continuar';
       btn.disabled = false;
     }
+  }
+
+  // Login rápido de prueba (solo visible en localhost)
+  if (['localhost', '127.0.0.1'].includes(window.location.hostname)) {
+    document.getElementById('btn-login-rapido').style.display = 'block';
+  }
+  function loginRapido() {
+    document.getElementById('telefono').value = '5550000001';
+    document.getElementById('password').value = '123456';
+    login();
   }
 
   // Enter para login

@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DriverGo - Chat</title>
+  <link rel="icon" type="image/png" href="/images/ICONO_CLIENTE.png"/>
+  <link rel="apple-touch-icon" href="/images/ICONO_CLIENTE.png"/>
+  <link rel="stylesheet" href="/css/global.css"/>
+  <style>
+    .chat-body {
+      padding: 16px 16px 110px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .msg {
+      max-width: 82%;
+      padding: 10px 14px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.4;
+      white-space: pre-line;
+      word-wrap: break-word;
+      animation: aparecer 0.2s ease;
+    }
+
+    .msg-bot {
+      align-self: flex-start;
+      background: #f3f4f6;
+      color: #111827;
+      border-bottom-left-radius: 4px;
+    }
+
+    .msg-user {
+      align-self: flex-end;
+      background: #2563eb;
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+
+    .msg-autor {
+      font-size: 11px;
+      font-weight: 800;
+      color: #2563eb;
+      margin-bottom: 2px;
+    }
+
+    .escribiendo {
+      align-self: flex-start;
+      background: #f3f4f6;
+      border-radius: 16px;
+      padding: 12px 16px;
+      display: flex;
+      gap: 4px;
+    }
+
+    .escribiendo span {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #9ca3af;
+      animation: punto 1s infinite;
+    }
+    .escribiendo span:nth-child(2) { animation-delay: 0.15s; }
+    .escribiendo span:nth-child(3) { animation-delay: 0.3s; }
+
+    .opciones {
+      align-self: flex-end;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+      max-width: 90%;
+    }
+
+    .opcion {
+      padding: 10px 16px;
+      background: #fff;
+      color: #2563eb;
+      border: 1.5px solid #2563eb;
+      border-radius: 20px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: right;
+      transition: all 0.15s;
+    }
+    .opcion:hover { background: #eff6ff; }
+    .opcion:active { transform: scale(0.97); }
+
+    .btn-proceso {
+      align-self: stretch;
+      margin-top: 6px;
+      background: #16a34a;
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(22,163,74,0.3);
+      animation: aparecer 0.2s ease;
+    }
+    .btn-proceso:hover { background: #15803d; }
+
+    .input-bar {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 420px;
+      background: #fff;
+      border-top: 1px solid #f3f4f6;
+      padding: 12px 16px 18px;
+      display: none;
+      gap: 8px;
+    }
+    .input-bar.show { display: flex; }
+    .input-bar .input-field { flex: 1; }
+
+    .btn-enviar {
+      width: 48px;
+      flex-shrink: 0;
+      border: none;
+      border-radius: 8px;
+      background: #2563eb;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-enviar:hover { background: #1d4ed8; }
+
+    @keyframes aparecer { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    @keyframes punto { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <button class="back-btn" onclick="history.back()">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M19 12H5M12 5l-7 7 7 7"/>
+      </svg>
+    </button>
+    <span class="header-title">Chat DriverGo</span>
+    <div style="width:30px"></div>
+  </div>
+
+  <div class="chat-body" id="chat"></div>
+
+  <!-- Solo se muestra cuando el bot pide la dirección -->
+  <div class="input-bar" id="input-bar">
+    <input type="text" class="input-field" id="input-direccion" placeholder="Ej. Calle 10 por Av. Colosio" maxlength="255"/>
+    <button class="btn-enviar" onclick="enviarDireccion()" aria-label="Enviar">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+      </svg>
+    </button>
+  </div>
+
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  const user = getUser();
+  if (!user || user.tipo !== 'cliente') window.location.href = '/cliente/login.html';
+
+  // Chatbot de OPCIONES FIJAS: no interpreta texto libre. El único campo de
+  // texto es la dirección de entrega, que se guarda tal cual.
+  const MSG_DOMICILIO = 'Hola, quiero mi pedido a domicilio';
+  const MSG_RECOGER   = 'Hola, quiero mi pedido para pasar a recoger';
+  const COSTO_ENVIO   = 30;     // igual que en el servidor
+  const TASA_IMPUESTOS = 0.02;  // igual que en el servidor
+
+  const chat = document.getElementById('chat');
+  const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
+  let pedidoId = new URLSearchParams(window.location.search).get('pedido');
+  let negocio = null;        // { nombre, direccion } del negocio del pedido
+  let enviando = false;
+  let pollingId = null;
+  let avisoRepartidor = false;
+
+  // ---------- utilidades de UI ----------
+
+  const esperar = ms => new Promise(r => setTimeout(r, ms));
+
+  function scrollAbajo() {
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  }
+
+  function agregarMensaje(texto, deQuien) {
+    const div = document.createElement('div');
+    div.className = 'msg ' + (deQuien === 'user' ? 'msg-user' : 'msg-bot');
+    if (deQuien !== 'user') {
+      const autor = document.createElement('div');
+      autor.className = 'msg-autor';
+      autor.textContent = 'DriverGo';
+      div.appendChild(autor);
+    }
+    div.appendChild(document.createTextNode(texto));
+    chat.appendChild(div);
+    scrollAbajo();
+  }
+
+  // Mensaje del bot con indicador "escribiendo..." (sin animación al reconstruir)
+  async function bot(texto, animar = true) {
+    if (animar) {
+      const typing = document.createElement('div');
+      typing.className = 'escribiendo';
+      typing.innerHTML = '<span></span><span></span><span></span>';
+      chat.appendChild(typing);
+      scrollAbajo();
+      await esperar(700);
+      typing.remove();
+    }
+    agregarMensaje(texto, 'bot');
+  }
+
+  function usuario(texto) { agregarMensaje(texto, 'user'); }
+
+  // Muestra opciones fijas; al elegir una, desaparecen y se ejecuta su acción
+  function mostrarOpciones(opciones) {
+    const cont = document.createElement('div');
+    cont.className = 'opciones';
+    opciones.forEach(op => {
+      const b = document.createElement('button');
+      b.className = 'opcion';
+      b.textContent = op.texto;
+      b.onclick = () => {
+        if (enviando) return;
+        cont.remove();
+        if (op.eco !== false) usuario(op.texto);
+        op.accion();
+      };
+      cont.appendChild(b);
+    });
+    chat.appendChild(cont);
+    scrollAbajo();
+  }
+
+  function mostrarInputDireccion(mostrar) {
+    document.getElementById('input-bar').classList.toggle('show', mostrar);
+    if (mostrar) document.getElementById('input-direccion').focus();
+  }
+
+  function mostrarBotonProceso(pedido) {
+    if (document.getElementById('btn-proceso')) return;
+    const b = document.createElement('button');
+    b.id = 'btn-proceso';
+    b.className = 'btn btn-proceso';
+    b.textContent = 'Visualizar proceso';
+    // Consulta el estado actual y abre seguimiento (o entregado si ya terminó)
+    b.onclick = async () => {
+      const actual = await apiGet(`/pedidos/${pedido.id}`);
+      abrirPedidoCliente(actual.error ? pedido : actual);
+    };
+    chat.appendChild(b);
+    scrollAbajo();
+  }
+
+  // ---------- cálculos ----------
+
+  function calcularTotales(tipo) {
+    const subtotal = carrito.reduce((s, i) => s + i.precio * i.cantidad, 0);
+    const envio = tipo === 'domicilio' ? COSTO_ENVIO : 0;
+    const impuestos = parseFloat((subtotal * TASA_IMPUESTOS).toFixed(2));
+    return { subtotal, envio, impuestos, total: subtotal + envio + impuestos };
+  }
+
+  function numPedido(id) { return '#' + String(id).padStart(12, '0'); }
+
+  async function cargarNegocio(id, nombre) {
+    negocio = { nombre, direccion: null };
+    try {
+      const lista = await apiGet('/negocios');
+      const n = Array.isArray(lista) && lista.find(x => x.id == id);
+      if (n) negocio = { nombre: n.nombre, direccion: n.direccion };
+    } catch (e) {}
+  }
+
+  // ---------- flujo de un pedido nuevo ----------
+
+  async function iniciarPedidoNuevo() {
+    if (!carrito.length) {
+      await bot('Tu carrito está vacío. Agrega productos para hacer un pedido.');
+      mostrarOpciones([{ texto: 'Ver negocios', eco: false,
+        accion: () => { window.location.href = '/cliente/home.html'; } }]);
+      return;
+    }
+    await cargarNegocio(carrito[0].negocio_id, carrito[0].negocio_nombre);
+    await bot(`¡Hola${user.nombres ? ', ' + user.nombres : ''}! Soy el asistente de DriverGo.\n¿Cómo quieres recibir tu pedido de ${negocio.nombre}?`);
+    mostrarOpcionesEntrega();
+  }
+
+  function mostrarOpcionesEntrega() {
+    mostrarOpciones([
+      { texto: MSG_DOMICILIO, accion: elegirDomicilio },
+      { texto: MSG_RECOGER,   accion: elegirRecoger },
+    ]);
+  }
+
+  async function elegirDomicilio() {
+    await bot('¡Perfecto! ¿A qué dirección te llevamos tu pedido?\nEscríbela abajo 👇');
+    mostrarInputDireccion(true);
+  }
+
+  async function enviarDireccion() {
+    const input = document.getElementById('input-direccion');
+    const direccion = input.value.trim();
+    if (direccion.length < 5) {
+      input.focus();
+      input.style.borderColor = '#dc2626';
+      return;
+    }
+    input.style.borderColor = '';
+    input.value = '';
+    mostrarInputDireccion(false);
+    usuario(direccion);
+
+    const t = calcularTotales('domicilio');
+    await bot(`Entrega a domicilio en:\n${direccion}\n\nEnvío: ${formatCurrency(t.envio)}\nTotal a pagar: ${formatCurrency(t.total)} (efectivo)`);
+    mostrarOpciones([
+      { texto: 'Confirmar pedido', accion: () => confirmarPedido('domicilio', direccion) },
+      { texto: 'Cambiar dirección', accion: elegirDomicilio },
+    ]);
+  }
+
+  async function elegirRecoger() {
+    const t = calcularTotales('recoger');
+    const donde = negocio.direccion ? `${negocio.nombre} (${negocio.direccion})` : negocio.nombre;
+    await bot(`¡Claro! Pasarás a recoger tu pedido a ${donde}.`);
+    await bot(`Como pasas a recoger, no se cobra envío.\nTotal a pagar: ${formatCurrency(t.total)} (efectivo)`);
+    mostrarOpciones([
+      { texto: 'Confirmar pedido', accion: () => confirmarPedido('recoger', null) },
+      { texto: 'Mejor a domicilio', accion: elegirDomicilio },
+    ]);
+  }
+
+  async function confirmarPedido(tipo, direccion) {
+    if (enviando) return;
+    enviando = true;
+    const t = calcularTotales(tipo);
+    const res = await apiPost('/pedidos', {
+      negocio_id: carrito[0].negocio_id,
+      tipo_entrega: tipo,
+      direccion_envio: direccion,
+      items: carrito.map(i => ({ producto_id: i.producto_id, cantidad: i.cantidad, precio: i.precio })),
+      subtotal: t.subtotal
+    });
+    enviando = false;
+
+    if (!res.ok) {
+      await bot(`No se pudo enviar tu pedido: ${res.error || 'error desconocido'}.`);
+      mostrarOpciones([
+        { texto: 'Intentar de nuevo', accion: () => confirmarPedido(tipo, direccion) },
+        { texto: 'Volver al carrito', eco: false, accion: () => { window.location.href = '/cliente/carrito.html'; } },
+      ]);
+      return;
+    }
+
+    // Pedido creado: vaciar carrito y fijar el id en la URL para poder retomar el chat
+    localStorage.removeItem('carrito');
+    pedidoId = res.pedido_id;
+    history.replaceState(null, '', '/cliente/chat.html?pedido=' + pedidoId);
+
+    const pedido = await apiGet(`/pedidos/${pedidoId}`);
+    await mensajesPedidoEnviado(pedido, true);
+    actualizarSegunEstado(pedido, true);
+  }
+
+  // ---------- mensajes posteriores (pedido ya creado) ----------
+
+  async function mensajesPedidoEnviado(pedido, animar) {
+    await bot(`¡Listo! Tu pedido ${numPedido(pedido.id)} fue enviado a ${pedido.negocio_nombre}.`, animar);
+    if (pedido.tipo_entrega === 'recoger') {
+      await bot('Te avisaremos cuando esté listo para que pases por él. Puedes ver el avance en cualquier momento.', animar);
+    } else {
+      await bot('Vamos a buscar un repartidor para tu pedido 🛵\nTe avisaré aquí en cuanto el negocio tenga uno.', animar);
+    }
+  }
+
+  // Decide si mostrar "Visualizar proceso": recoger siempre; domicilio solo
+  // cuando el negocio ya marcó que tiene repartidor.
+  async function actualizarSegunEstado(pedido, animar) {
+    if (pedido.estado === 'cancelado') {
+      detenerPolling();
+      await bot('Este pedido fue cancelado.', animar);
+      return;
+    }
+    if (pedido.tipo_entrega === 'recoger') {
+      mostrarBotonProceso(pedido);
+      return;
+    }
+    if (Number(pedido.repartidor_asignado) === 1) {
+      detenerPolling();
+      if (!avisoRepartidor) {
+        avisoRepartidor = true;
+        await bot(`¡Buenas noticias! ${pedido.negocio_nombre} ya tiene repartidor para tu pedido. Ya puedes ver el proceso.`, animar);
+      }
+      mostrarBotonProceso(pedido);
+    } else {
+      iniciarPolling();
+    }
+  }
+
+  function iniciarPolling() {
+    if (pollingId) return;
+    pollingId = setInterval(async () => {
+      const pedido = await apiGet(`/pedidos/${pedidoId}`);
+      if (pedido.error) return;
+      if (pedido.estado === 'cancelado' || Number(pedido.repartidor_asignado) === 1) {
+        actualizarSegunEstado(pedido, true);
+      }
+    }, 5000);
+  }
+
+  function detenerPolling() {
+    if (pollingId) { clearInterval(pollingId); pollingId = null; }
+  }
+
+  // ---------- retomar un chat de un pedido existente ----------
+
+  async function retomarPedido() {
+    const pedido = await apiGet(`/pedidos/${pedidoId}`);
+    if (pedido.error || pedido.cliente_id !== user.id) {
+      await bot('No encontramos este pedido.');
+      mostrarOpciones([{ texto: 'Ver mis pedidos', eco: false,
+        accion: () => { window.location.href = '/cliente/pedidos.html'; } }]);
+      return;
+    }
+    // Reconstruir la conversación sin animaciones
+    if (pedido.tipo_entrega === 'recoger') {
+      usuario(MSG_RECOGER);
+    } else {
+      usuario(MSG_DOMICILIO);
+      await bot('¡Perfecto! ¿A qué dirección te llevamos tu pedido?', false);
+      usuario(pedido.direccion_envio || '');
+    }
+    await mensajesPedidoEnviado(pedido, false);
+    // Si ya tenía repartidor al abrir el chat, el aviso se muestra sin animación
+    await actualizarSegunEstado(pedido, false);
+  }
+
+  document.getElementById('input-direccion').addEventListener('keydown', e => {
+    if (e.key === 'Enter') enviarDireccion();
+  });
+
+  if (pedidoId) retomarPedido();
+  else iniciarPedidoNuevo();
+</script>
+</body>
+</html>
