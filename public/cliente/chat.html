@@ -251,13 +251,10 @@
     b.id = 'btn-proceso';
     b.className = 'btn btn-proceso';
     b.textContent = 'Visualizar proceso';
-    b.onclick = () => {
-      // Mismo formato que usa pedidos.html para abrir el seguimiento
-      localStorage.setItem('pedido_seguimiento', JSON.stringify({
-        id: pedido.id, estado: pedido.estado,
-        direccion: pedido.direccion_envio, fecha: pedido.created_at
-      }));
-      window.location.href = '/cliente/seguimiento.html';
+    // Consulta el estado actual y abre seguimiento (o entregado si ya terminó)
+    b.onclick = async () => {
+      const actual = await apiGet(`/pedidos/${pedido.id}`);
+      abrirPedidoCliente(actual.error ? pedido : actual);
     };
     chat.appendChild(b);
     scrollAbajo();

@@ -134,6 +134,31 @@ function getEstadoLabel(estado) {
   };
   return map[estado] || estado;
 }
+// Abre un pedido del cliente en la pantalla que corresponde:
+// - domicilio sin repartidor todavía -> chat (ahí aparece "Visualizar proceso" cuando lo haya)
+// - entregado -> pantalla de entregado
+// - lo demás -> seguimiento
+function abrirPedidoCliente(p) {
+  const esperandoRepartidor = p.tipo_entrega !== 'recoger'
+    && !Number(p.repartidor_asignado)
+    && !['cancelado', 'entregado'].includes(p.estado);
+  if (esperandoRepartidor) {
+    window.location.href = '/cliente/chat.html?pedido=' + p.id;
+    return;
+  }
+  localStorage.setItem('pedido_seguimiento', JSON.stringify({
+    id: p.id,
+    estado: p.estado,
+    tipo_entrega: p.tipo_entrega || 'domicilio',
+    direccion: p.direccion_envio,
+    negocio_nombre: p.negocio_nombre,
+    fecha: p.estado === 'entregado' ? p.updated_at : p.created_at
+  }));
+  window.location.href = p.estado === 'entregado'
+    ? '/cliente/pedido-entregado.html'
+    : '/cliente/seguimiento.html';
+}
+
 // Escapa texto escrito por usuarios antes de meterlo en innerHTML
 function escapeHtml(str) {
   return String(str ?? '').replace(/[&<>"']/g, c => ({

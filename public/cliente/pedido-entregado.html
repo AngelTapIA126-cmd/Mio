@@ -140,7 +140,10 @@
   if (pedidoData.fecha) {
     document.getElementById('titulo-entregado').textContent = 'Entregado el ' + formatDate(pedidoData.fecha);
   }
-  if (pedidoData.direccion) {
+  if (pedidoData.tipo_entrega === 'recoger') {
+    document.getElementById('sub-entregado').textContent =
+      'Recogiste tu pedido en ' + (pedidoData.negocio_nombre || 'el negocio');
+  } else if (pedidoData.direccion) {
     document.getElementById('sub-entregado').textContent =
       'Tu pedido fue entregado en ' + pedidoData.direccion;
   }
