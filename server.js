@@ -226,80 +226,32 @@ app.delete('/api/productos/:id', authMiddleware, async (req, res) => {
   } catch (err) { res.status(400).json({ error: err.message }); }
 });
 
-// ==================== REPARTIDORES ====================
-
-app.post('/api/repartidores/registro', upload.fields([
-  { name: 'licencia_frente', maxCount: 1 },
-  { name: 'licencia_trasera', maxCount: 1 }
-]), async (req, res) => {
-  const { nombres, apellidos, telefono, password, tipo_vehiculo } = req.body;
-  if (!nombres || !apellidos || !telefono || !password || !tipo_vehiculo)
-    return res.status(400).json({ error: 'Todos los campos son requeridos' });
-  try {
-    const hash = await bcrypt.hash(password, 10);
-    const licencia_frente = await subirImagen(req.files?.licencia_frente?.[0]);
-    const licencia_trasera = await subirImagen(req.files?.licencia_trasera?.[0]);
-    const result = await query(
-      'INSERT INTO repartidores (nombres, apellidos, telefono, password, tipo_vehiculo, licencia_frente, licencia_trasera) VALUES (?,?,?,?,?,?,?)',
-      [nombres, apellidos, telefono, hash, tipo_vehiculo, licencia_frente, licencia_trasera]
-    );
-    const token = jwt.sign({ id: result.insertId, tipo: 'repartidor' }, SECRET, { expiresIn: '30d' });
-    res.json({ ok: true, token, id: result.insertId, nombres });
-  } catch (err) {
-    res.status(400).json({ error: 'El teléfono ya está registrado' });
-  }
-});
-
-app.post('/api/repartidores/login', async (req, res) => {
-  const { telefono, password } = req.body;
-  try {
-    const rows = await query('SELECT * FROM repartidores WHERE telefono = ?', [telefono]);
-    if (!rows.length) return res.status(400).json({ error: 'Teléfono o contraseña incorrectos' });
-    const ok = await bcrypt.compare(password, rows[0].password);
-    if (!ok) return res.status(400).json({ error: 'Teléfono o contraseña incorrectos' });
-    const token = jwt.sign({ id: rows[0].id, tipo: 'repartidor' }, SECRET, { expiresIn: '30d' });
-    res.json({ ok: true, token, id: rows[0].id, nombres: rows[0].nombres });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.get('/api/repartidores/disponibles', authMiddleware, async (req, res) => {
-  try {
-    const rows = await query('SELECT id, nombres, apellidos, tipo_vehiculo, disponible FROM repartidores WHERE disponible = 1', []);
-    res.json(rows);
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-app.get('/api/repartidores/perfil', authMiddleware, async (req, res) => {
-  try {
-    const rows = await query('SELECT id, nombres, apellidos, telefono, tipo_vehiculo, created_at FROM repartidores WHERE id = ?', [req.user.id]);
-    if (!rows.length) return res.status(404).json({ error: 'Repartidor no encontrado' });
-    const pedidos = await query('SELECT COUNT(*) as total FROM pedidos WHERE repartidor_id = ?', [req.user.id]);
-    const entregados = await query('SELECT COUNT(*) as total FROM pedidos WHERE repartidor_id = ? AND estado = "entregado"', [req.user.id]);
-    res.json({ ...rows[0], total_pedidos: pedidos[0].total, total_entregados: entregados[0].total });
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-app.put('/api/repartidores/disponibilidad', authMiddleware, async (req, res) => {
-  const { disponible } = req.body;
-  try {
-    await query('UPDATE repartidores SET disponible = ? WHERE id = ?', [disponible, req.user.id]);
-    res.json({ ok: true });
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
 // ==================== PEDIDOS ====================
 
+const COSTO_ENVIO_DOMICILIO = 30;
+const TASA_IMPUESTOS = 0.02;
+
 app.post('/api/pedidos', authMiddleware, async (req, res) => {
-  const { negocio_id, direccion_envio, items, subtotal, total } = req.body;
+  const { negocio_id, items, subtotal } = req.body;
+  const tipo_entrega = req.body.tipo_entrega || 'domicilio';
   const cliente_id = req.user.id;
-  const costo_envio = 30;
-  const impuestos = parseFloat((subtotal * 0.02).toFixed(2));
+
+  if (!['domicilio', 'recoger'].includes(tipo_entrega))
+    return res.status(400).json({ error: 'Tipo de entrega inválido' });
+  const direccion_envio = tipo_entrega === 'domicilio' ? (req.body.direccion_envio || '').trim() : null;
+  if (tipo_entrega === 'domicilio' && !direccion_envio)
+    return res.status(400).json({ error: 'La dirección de envío es requerida' });
+  if (!Array.isArray(items) || !items.length)
+    return res.status(400).json({ error: 'El pedido no tiene productos' });
+
+  // Recoger no cobra envío; el total se calcula aquí, no se toma del cliente
+  const costo_envio = tipo_entrega === 'domicilio' ? COSTO_ENVIO_DOMICILIO : 0;
+  const impuestos = parseFloat((subtotal * TASA_IMPUESTOS).toFixed(2));
+  const total = parseFloat((Number(subtotal) + costo_envio + impuestos).toFixed(2));
   try {
     const result = await query(
-      'INSERT INTO pedidos (cliente_id, negocio_id, direccion_envio, subtotal, costo_envio, impuestos, total) VALUES (?,?,?,?,?,?,?)',
-      [cliente_id, negocio_id, direccion_envio, subtotal, costo_envio, impuestos, total]
+      'INSERT INTO pedidos (cliente_id, negocio_id, tipo_entrega, direccion_envio, subtotal, costo_envio, impuestos, total) VALUES (?,?,?,?,?,?,?,?)',
+      [cliente_id, negocio_id, tipo_entrega, direccion_envio, subtotal, costo_envio, impuestos, total]
     );
     const pedido_id = result.insertId;
     for (const item of items) {
@@ -308,7 +260,7 @@ app.post('/api/pedidos', authMiddleware, async (req, res) => {
         [pedido_id, item.producto_id, item.cantidad, item.precio]
       );
     }
-    res.json({ ok: true, pedido_id });
+    res.json({ ok: true, pedido_id, tipo_entrega, costo_envio, impuestos, total });
   } catch (err) { res.status(400).json({ error: err.message }); }
 });
 
@@ -332,26 +284,6 @@ app.get('/api/pedidos/negocio', authMiddleware, async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.get('/api/pedidos/disponibles', authMiddleware, async (req, res) => {
-  try {
-    const rows = await query(
-      'SELECT p.*, c.nombres as cliente_nombre, n.nombre as negocio_nombre FROM pedidos p JOIN clientes c ON p.cliente_id = c.id JOIN negocios n ON p.negocio_id = n.id WHERE p.estado = ? AND p.repartidor_id = ? ORDER BY p.created_at DESC',
-      ['en_proceso', req.user.id]
-    );
-    res.json(rows);
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-app.get('/api/pedidos/repartidor', authMiddleware, async (req, res) => {
-  try {
-    const rows = await query(
-      'SELECT p.*, c.nombres as cliente_nombre, n.nombre as negocio_nombre FROM pedidos p JOIN clientes c ON p.cliente_id = c.id JOIN negocios n ON p.negocio_id = n.id WHERE p.repartidor_id = ? ORDER BY p.created_at DESC',
-      [req.user.id]
-    );
-    res.json(rows);
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
 app.get('/api/pedidos/:id', authMiddleware, async (req, res) => {
   try {
     const rows = await query(
@@ -367,16 +299,39 @@ app.get('/api/pedidos/:id', authMiddleware, async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+const ESTADOS_PEDIDO = ['pendiente', 'recibido', 'buscando_repartidor', 'en_proceso',
+  'en_camino', 'listo_recoger', 'entregado', 'cancelado'];
+
 app.put('/api/pedidos/:id/estado', authMiddleware, async (req, res) => {
-  const { estado, repartidor_id } = req.body;
+  const { estado } = req.body;
+  if (!ESTADOS_PEDIDO.includes(estado))
+    return res.status(400).json({ error: 'Estado inválido' });
   try {
-    if (repartidor_id) {
-      await query('UPDATE pedidos SET estado = ?, repartidor_id = ? WHERE id = ?', [estado, repartidor_id, req.params.id]);
-    } else {
-      await query('UPDATE pedidos SET estado = ? WHERE id = ?', [estado, req.params.id]);
-    }
+    await query('UPDATE pedidos SET estado = ? WHERE id = ?', [estado, req.params.id]);
     res.json({ ok: true });
   } catch (err) { res.status(400).json({ error: err.message }); }
+});
+
+// El negocio marca "ya tengo repartidor" (solo domicilio). No se guarda ningún dato del repartidor.
+app.put('/api/pedidos/:id/repartidor', authMiddleware, async (req, res) => {
+  if (req.user.tipo !== 'negocio')
+    return res.status(403).json({ error: 'Solo el negocio puede asignar repartidor' });
+  try {
+    const rows = await query('SELECT negocio_id, tipo_entrega, estado FROM pedidos WHERE id = ?', [req.params.id]);
+    if (!rows.length) return res.status(404).json({ error: 'Pedido no encontrado' });
+    const pedido = rows[0];
+    if (pedido.negocio_id !== req.user.id)
+      return res.status(403).json({ error: 'Este pedido no es de tu negocio' });
+    if (pedido.tipo_entrega !== 'domicilio')
+      return res.status(400).json({ error: 'Los pedidos para recoger no llevan repartidor' });
+    if (pedido.estado !== 'buscando_repartidor')
+      return res.status(400).json({ error: 'El pedido no está buscando repartidor' });
+    await query(
+      'UPDATE pedidos SET repartidor_asignado = 1, repartidor_asignado_at = NOW(), estado = ? WHERE id = ?',
+      ['en_proceso', req.params.id]
+    );
+    res.json({ ok: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // ==================== ADMIN ====================
@@ -412,21 +367,6 @@ app.get('/api/admin/clientes', authMiddleware, async (req, res) => {
   try {
     const rows = await query('SELECT id, nombres, apellidos, telefono, created_at FROM clientes', []);
     res.json(rows);
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-app.get('/api/admin/repartidores', authMiddleware, async (req, res) => {
-  try {
-    const rows = await query('SELECT * FROM repartidores', []);
-    res.json(rows);
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-app.put('/api/admin/repartidores/:id', authMiddleware, async (req, res) => {
-  const { disponible } = req.body;
-  try {
-    await query('UPDATE repartidores SET disponible = ? WHERE id = ?', [disponible, req.params.id]);
-    res.json({ ok: true });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
@@ -474,13 +414,11 @@ app.get('/api/admin/stats', authMiddleware, async (req, res) => {
   try {
     const clientes = await query('SELECT COUNT(*) as total FROM clientes', []);
     const negocios = await query('SELECT COUNT(*) as total FROM negocios', []);
-    const repartidores = await query('SELECT COUNT(*) as total FROM repartidores', []);
     const pedidos = await query('SELECT COUNT(*) as total FROM pedidos', []);
     const ingresos = await query('SELECT SUM(total) as total FROM pedidos WHERE estado = "entregado"', []);
     res.json({
       clientes: clientes[0].total,
       negocios: negocios[0].total,
-      repartidores: repartidores[0].total,
       pedidos: pedidos[0].total,
       ingresos: ingresos[0].total || 0
     });
