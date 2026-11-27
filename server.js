@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 const multer = require('multer');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -11,16 +12,20 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const SECRET = 'drivergo_secret_2024';
 
-// Supabase
-const supabase = createClient(
-  process.env.SUPABASE_URL || '',
-  process.env.SUPABASE_KEY || ''
-);
+// Supabase (si no hay credenciales, las imágenes se guardan en /uploads local)
+const supabase = process.env.SUPABASE_URL && process.env.SUPABASE_KEY
+  ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY)
+  : null;
+if (!supabase) console.log('⚠️  Sin credenciales de Supabase: imágenes en carpeta uploads/');
 
-// Función para subir imagen a Supabase
+// Función para subir imagen (Supabase o disco local)
 async function subirImagen(file) {
   if (!file) return null;
-  const filename = Date.now() + path.extname(file.originalname);
+  const filename = Date.now() + '-' + Math.round(Math.random() * 1e6) + path.extname(file.originalname);
+  if (!supabase) {
+    await fs.promises.writeFile(path.join(__dirname, 'uploads', filename), file.buffer);
+    return filename;
+  }
   const { data, error } = await supabase.storage
     .from('uploads')
     .upload(filename, file.buffer, {

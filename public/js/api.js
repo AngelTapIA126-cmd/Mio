@@ -1,4 +1,7 @@
-const API = 'https://drivergo-production.up.railway.app/api';
+// Usa el mismo servidor que sirve la página (localhost en desarrollo, Railway en producción)
+const API = window.location.protocol === 'file:'
+  ? 'http://localhost:3000/api'
+  : window.location.origin + '/api';
 
 function getToken() {
   return localStorage.getItem('token');
