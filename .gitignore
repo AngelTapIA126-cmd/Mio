@@ -1,0 +1,22 @@
+# Dependencias (se instalan con npm install)
+node_modules/
+
+# Variables de entorno / credenciales
+.env
+.env.*
+
+# Base SQLite antigua (ya no se usa) y exportación fallida
+drivergo.db
+drivergo.sql
+
+# Imágenes subidas en desarrollo local
+# (las que ya estaban en el repo se siguen rastreando)
+uploads/*
+
+# Logs y archivos del sistema
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
