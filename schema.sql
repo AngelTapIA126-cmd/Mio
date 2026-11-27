@@ -33,19 +33,6 @@ CREATE TABLE IF NOT EXISTS negocios (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
-CREATE TABLE IF NOT EXISTS repartidores (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  nombres VARCHAR(100) NOT NULL,
-  apellidos VARCHAR(100) NOT NULL,
-  telefono VARCHAR(20) NOT NULL UNIQUE,
-  password VARCHAR(255) NOT NULL,
-  tipo_vehiculo VARCHAR(50) NOT NULL,
-  licencia_frente VARCHAR(500),
-  licencia_trasera VARCHAR(500),
-  disponible TINYINT(1) DEFAULT 1,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
-
 CREATE TABLE IF NOT EXISTS productos (
   id INT AUTO_INCREMENT PRIMARY KEY,
   negocio_id INT NOT NULL,
@@ -63,19 +50,25 @@ CREATE TABLE IF NOT EXISTS pedidos (
   id INT AUTO_INCREMENT PRIMARY KEY,
   cliente_id INT NOT NULL,
   negocio_id INT NOT NULL,
-  repartidor_id INT NULL,
-  direccion_envio VARCHAR(255) NOT NULL,
+  -- 'domicilio': pide dirección y el negocio marca "ya tengo repartidor"
+  -- 'recoger': sin dirección, sin envío, se salta el paso de repartidor
+  tipo_entrega ENUM('domicilio','recoger') NOT NULL DEFAULT 'domicilio',
+  repartidor_asignado TINYINT(1) NOT NULL DEFAULT 0,
+  repartidor_asignado_at DATETIME NULL,
+  direccion_envio VARCHAR(255) NULL,
   tipo_pago VARCHAR(20) DEFAULT 'efectivo',
   subtotal DECIMAL(10,2) NOT NULL,
   costo_envio DECIMAL(10,2) DEFAULT 30,
   impuestos DECIMAL(10,2) DEFAULT 0,
   total DECIMAL(10,2) NOT NULL,
+  -- domicilio: pendiente > recibido > buscando_repartidor > en_proceso > en_camino > entregado
+  -- recoger:   pendiente > recibido > en_proceso > listo_recoger > entregado
+  -- cualquiera puede terminar en 'cancelado'
   estado VARCHAR(30) DEFAULT 'pendiente',
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (cliente_id) REFERENCES clientes(id),
-  FOREIGN KEY (negocio_id) REFERENCES negocios(id),
-  FOREIGN KEY (repartidor_id) REFERENCES repartidores(id)
+  FOREIGN KEY (negocio_id) REFERENCES negocios(id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS pedido_items (
