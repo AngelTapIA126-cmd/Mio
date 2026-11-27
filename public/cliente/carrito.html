@@ -212,7 +212,7 @@
     <div class="loading"><div class="spinner"></div> Cargando...</div>
   </div>
 
-  <button class="btn-pedido" id="btn-pedido" onclick="hacerPedido()">Hacer pedido</button>
+  <button class="btn-pedido" id="btn-pedido" onclick="irAlChat()">Ir al chat</button>
 
 </div>
 
@@ -268,16 +268,8 @@
     cont.innerHTML = `
       <div class="seccion">
         <div class="seccion-row">
-          <span class="seccion-label">ENVÍO</span>
-          <span class="seccion-valor muted" id="dir-display">Agregar dirección de envío ›</span>
-        </div>
-        <input type="text" class="direccion-input" id="direccion" placeholder="Ej. Calle 10 por Av. Colosio" oninput="actualizarDir(this.value)"/>
-      </div>
-
-      <div class="seccion">
-        <div class="seccion-row">
           <span class="seccion-label">ENTREGA</span>
-          <span class="seccion-valor">$${envio.toFixed(2)} › <small style="color:#6b7280;font-size:11px;">Estándar | 10-20 min</small></span>
+          <span class="seccion-valor">$${envio.toFixed(2)} › <small style="color:#6b7280;font-size:11px;">A domicilio | Gratis si pasas a recoger</small></span>
         </div>
       </div>
 
@@ -338,45 +330,11 @@
     `;
   }
 
-  function actualizarDir(val) {
-    const display = document.getElementById('dir-display');
-    if (display) display.textContent = val || 'Agregar dirección de envío ›';
-  }
-
-  async function hacerPedido() {
-    const direccion = document.getElementById('direccion')?.value.trim();
-    if (!direccion) {
-      alert('Por favor ingresa tu dirección de envío');
-      return;
-    }
-
-    const subtotal = carrito.reduce((s, i) => s + i.precio * i.cantidad, 0);
-    const envio = 30;
-    const impuestos = parseFloat((subtotal * 0.02).toFixed(2));
-    const total = subtotal + envio + impuestos;
-
-    const btn = document.getElementById('btn-pedido');
-    btn.textContent = 'Procesando...';
-    btn.disabled = true;
-
-    const res = await apiPost('/pedidos', {
-      negocio_id: carrito[0].negocio_id,
-      direccion_envio: direccion,
-      items: carrito.map(i => ({ producto_id: i.producto_id, cantidad: i.cantidad, precio: i.precio })),
-      subtotal,
-      total
-    });
-
-    if (res.ok) {
-      localStorage.removeItem('carrito');
-      showToast('Pedido realizado', () => {
-        window.location.href = '/cliente/pedidos.html';
-      });
-    } else {
-      alert(res.error || 'Error al realizar pedido');
-      btn.textContent = 'Hacer pedido';
-      btn.disabled = false;
-    }
+  // El tipo de entrega, la dirección y la confirmación se hacen en el chat
+  function irAlChat() {
+    if (!carrito.length) return;
+    localStorage.removeItem('pedido_chat');
+    window.location.href = '/cliente/chat.html';
   }
 
   renderCarrito();
