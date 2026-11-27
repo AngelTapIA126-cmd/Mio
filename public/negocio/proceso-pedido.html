@@ -71,17 +71,17 @@
   </div>
 
   <div class="content">
-    <p style="font-size:13px;font-weight:700;color:#374151;margin-bottom:16px;">Proceso del pedido ›</p>
+    <p style="font-size:13px;font-weight:700;color:#374151;margin-bottom:16px;" id="proceso-titulo">Proceso del pedido ›</p>
 
     <div class="timeline-wrap">
       <div class="timeline" id="timeline"></div>
     </div>
   </div>
 
-  <button class="btn-camino" id="btn-camino" onclick="marcarEnCamino()">
-    Pedido en camino
+  <button class="btn-camino" id="btn-camino" onclick="ejecutarAccion()" disabled>
+    Cargando...
   </button>
-  <p class="nota">Da click cuando el repartidor ya haya pasado por el pedido</p>
+  <p class="nota" id="nota"></p>
 
 </div>
 
@@ -93,19 +93,51 @@
   const pedidoId = localStorage.getItem('pedido_negocio');
   if (!pedidoId) window.location.href = '/negocio/notificaciones.html';
 
-  const pasos = [
-    { key: 'pendiente',           label: 'Pendiente' },
-    { key: 'recibido',            label: 'Pedido recibido' },
-    { key: 'buscando_repartidor', label: 'Buscando repartidor' },
-    { key: 'en_proceso',          label: 'Pedido en proceso' },
-    { key: 'en_camino',           label: 'Pedido en camino' },
-    { key: 'entregado',           label: 'Pedido entregado' },
-  ];
+  // Pasos según el tipo de entrega. Recoger se salta todo lo del repartidor.
+  const PASOS = {
+    domicilio: [
+      { key: 'pendiente',           label: 'Pendiente' },
+      { key: 'recibido',            label: 'Pedido recibido' },
+      { key: 'buscando_repartidor', label: 'Buscando repartidor' },
+      { key: 'en_proceso',          label: 'Pedido en proceso' },
+      { key: 'en_camino',           label: 'Pedido en camino' },
+      { key: 'entregado',           label: 'Pedido entregado' },
+    ],
+    recoger: [
+      { key: 'pendiente',     label: 'Pendiente' },
+      { key: 'recibido',      label: 'Pedido recibido' },
+      { key: 'en_proceso',    label: 'Pedido en proceso' },
+      { key: 'listo_recoger', label: 'Listo para recoger' },
+      { key: 'entregado',     label: 'Pedido entregado' },
+    ],
+  };
 
-  const orden = ['pendiente','recibido','buscando_repartidor','en_proceso','en_camino','entregado'];
+  // Siguiente acción del negocio según tipo de entrega y estado actual
+  const ACCIONES = {
+    domicilio: {
+      recibido:            { texto: 'Buscar repartidor',  nota: 'Da click para empezar a buscar un repartidor', estado: 'buscando_repartidor' },
+      buscando_repartidor: { texto: 'Ya tengo repartidor', nota: 'Da click cuando ya tengas un repartidor para este pedido', repartidor: true },
+      en_proceso:          { texto: 'Pedido en camino',   nota: 'Da click cuando el repartidor ya haya pasado por el pedido', estado: 'en_camino' },
+      en_camino:           { texto: 'Pedido entregado',   nota: 'Da click cuando el cliente ya haya recibido su pedido', estado: 'entregado' },
+    },
+    recoger: {
+      recibido:      { texto: 'Listo para recoger', nota: 'Da click cuando el pedido esté listo para que el cliente pase por él', estado: 'listo_recoger' },
+      en_proceso:    { texto: 'Listo para recoger', nota: 'Da click cuando el pedido esté listo para que el cliente pase por él', estado: 'listo_recoger' },
+      listo_recoger: { texto: 'Pedido entregado',   nota: 'Da click cuando el cliente haya recogido su pedido', estado: 'entregado' },
+    },
+  };
 
-  function renderTimeline(estado) {
-    const idx = orden.indexOf(estado);
+  let pedidoActual = null;
+  let actualizando = false;
+
+  function render(pedido) {
+    const tipo = pedido.tipo_entrega === 'recoger' ? 'recoger' : 'domicilio';
+    const pasos = PASOS[tipo];
+    const idx = pasos.findIndex(p => p.key === pedido.estado);
+
+    document.getElementById('proceso-titulo').textContent =
+      `Proceso del pedido (${tipo === 'recoger' ? 'para recoger' : 'a domicilio'}) ›`;
+
     document.getElementById('timeline').innerHTML = pasos.map((p, i) => {
       const done = i < idx;
       const active = i === idx;
@@ -117,30 +149,48 @@
     }).join('');
 
     const btn = document.getElementById('btn-camino');
-    if (estado === 'en_camino' || estado === 'entregado') {
+    const nota = document.getElementById('nota');
+    const accion = ACCIONES[tipo][pedido.estado];
+
+    if (accion) {
+      btn.disabled = false;
+      btn.textContent = accion.texto;
+      nota.textContent = accion.nota;
+    } else {
       btn.disabled = true;
-      btn.textContent = estado === 'entregado' ? 'Pedido entregado' : 'Pedido en camino ✓';
+      btn.textContent = pedido.estado === 'entregado' ? 'Pedido entregado ✓'
+                      : pedido.estado === 'cancelado' ? 'Pedido cancelado'
+                      : getEstadoLabel(pedido.estado);
+      nota.textContent = '';
     }
   }
 
   async function cargarEstado() {
+    if (actualizando) return;
     const pedido = await apiGet(`/pedidos/${pedidoId}`);
-    renderTimeline(pedido.estado);
+    if (pedido.error) return;
+    pedidoActual = pedido;
+    render(pedido);
   }
 
-  async function marcarEnCamino() {
+  async function ejecutarAccion() {
+    if (!pedidoActual) return;
+    const tipo = pedidoActual.tipo_entrega === 'recoger' ? 'recoger' : 'domicilio';
+    const accion = ACCIONES[tipo][pedidoActual.estado];
+    if (!accion) return;
+
     const btn = document.getElementById('btn-camino');
     btn.disabled = true;
     btn.textContent = 'Actualizando...';
+    actualizando = true;
 
-    const res = await apiPut(`/pedidos/${pedidoId}/estado`, { estado: 'en_camino' });
-    if (res.ok) {
-      renderTimeline('en_camino');
-      btn.textContent = 'Pedido en camino ✓';
-    } else {
-      btn.disabled = false;
-      btn.textContent = 'Pedido en camino';
-    }
+    const res = accion.repartidor
+      ? await apiPut(`/pedidos/${pedidoId}/repartidor`, {})
+      : await apiPut(`/pedidos/${pedidoId}/estado`, { estado: accion.estado });
+
+    actualizando = false;
+    if (!res.ok) alert(res.error || 'Error al actualizar el pedido');
+    await cargarEstado();
   }
 
   cargarEstado();

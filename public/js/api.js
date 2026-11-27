@@ -128,11 +128,19 @@ function getEstadoLabel(estado) {
     'buscando_repartidor': 'Buscando repartidor',
     'en_proceso': 'Pedido en proceso',
     'en_camino': 'Pedido en camino',
+    'listo_recoger': 'Listo para recoger',
     'entregado': 'Pedido entregado',
     'cancelado': 'Cancelado'
   };
   return map[estado] || estado;
 }
+// Escapa texto escrito por usuarios antes de meterlo en innerHTML
+function escapeHtml(str) {
+  return String(str ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
 function getImageUrl(imagen) {
   if (!imagen) return null;
   if (imagen.startsWith('http')) return imagen;

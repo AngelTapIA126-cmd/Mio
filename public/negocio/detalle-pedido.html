@@ -178,10 +178,16 @@
 
     const btn = document.getElementById('btn-aceptar');
 
-    if (pedido.estado !== 'pendiente') {
-      btn.textContent = pedido.estado === 'cancelado' ? 'Cancelado' : 'Ya procesado';
+    if (pedido.estado === 'cancelado') {
+      btn.textContent = 'Cancelado';
       btn.disabled = true;
+    } else if (pedido.estado !== 'pendiente') {
+      // Ya aceptado: llevar al proceso para seguir actualizándolo
+      btn.textContent = 'Ver proceso del pedido';
+      btn.onclick = () => { window.location.href = '/negocio/proceso-pedido.html'; };
     }
+
+    const esRecoger = pedido.tipo_entrega === 'recoger';
 
     document.getElementById('content').innerHTML = `
       <div class="info-row">
@@ -190,11 +196,13 @@
       </div>
       <div class="info-row">
         <span class="info-label">ENTREGA</span>
-        <span class="info-valor">$30.00 <small>Estándar | 10-20 min</small></span>
+        <span class="info-valor">${esRecoger
+          ? 'Para recoger <small>El cliente pasa al negocio</small>'
+          : `$${parseFloat(pedido.costo_envio).toFixed(2)} <small>A domicilio | 10-20 min</small>`}</span>
       </div>
       <div class="info-row">
         <span class="info-label">ENVÍO</span>
-        <span class="info-valor muted">${pedido.direccion_envio}</span>
+        <span class="info-valor muted">${esRecoger ? 'No aplica' : escapeHtml(pedido.direccion_envio)}</span>
       </div>
       <div class="info-row">
         <span class="info-label">Tipo de pago</span>
@@ -246,15 +254,20 @@
     const btn = document.getElementById('btn-aceptar');
     btn.disabled = true;
 
+    // Domicilio pasa a buscar repartidor; recoger se salta ese paso
+    const esRecoger = pedidoData && pedidoData.tipo_entrega === 'recoger';
+    document.getElementById('toast-title').textContent =
+      esRecoger ? 'Pedido aceptado' : 'Buscando repartidores...';
+
     document.getElementById('overlay').classList.add('show');
     document.getElementById('toast').classList.add('show');
 
     await apiPut(`/pedidos/${pedidoId}/estado`, { estado: 'recibido' });
 
     setTimeout(async () => {
-      await apiPut(`/pedidos/${pedidoId}/estado`, { estado: 'buscando_repartidor' });
+      await apiPut(`/pedidos/${pedidoId}/estado`, { estado: esRecoger ? 'en_proceso' : 'buscando_repartidor' });
       hideToast();
-      window.location.href = '/negocio/repartidores.html';
+      window.location.href = '/negocio/proceso-pedido.html';
     }, 2000);
   }
 

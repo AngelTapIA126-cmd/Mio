@@ -50,6 +50,7 @@
     .estado-buscando_repartidor { background: #f3e8ff; color: #6b21a8; }
     .estado-en_proceso { background: #dcfce7; color: #14532d; }
     .estado-en_camino { background: #dbeafe; color: #1e40af; }
+    .estado-listo_recoger { background: #ffedd5; color: #9a3412; }
     .estado-entregado { background: #dcfce7; color: #14532d; }
 
     .btn-ver {
@@ -150,6 +151,7 @@
     'buscando_repartidor': 'Buscando repartidor',
     'en_proceso': 'En proceso',
     'en_camino': 'En camino',
+    'listo_recoger': 'Listo para recoger',
     'entregado': 'Entregado',
     'cancelado': 'Cancelado'
   };
@@ -204,16 +206,18 @@
     list.innerHTML = ordenados.map(p => `
       <div class="pedido-card ${p.estado === 'pendiente' ? 'nuevo' : ''}">
         <div class="pedido-nombre">${p.cliente_nombre} ${p.cliente_apellidos}</div>
-        <div class="pedido-tiempo">${tiempoRelativo(p.created_at)}</div>
+        <div class="pedido-tiempo">${tiempoRelativo(p.created_at)} · ${p.tipo_entrega === 'recoger' ? 'Para recoger' : 'A domicilio'}</div>
         <span class="pedido-estado estado-${p.estado}">${estadoLabels[p.estado] || p.estado}</span><br/>
-        <button class="btn-ver" style="margin-top:8px;" onclick="verPedido(${p.id})">Ver pedido</button>
+        <button class="btn-ver" style="margin-top:8px;" onclick="verPedido(${p.id}, '${p.estado}')">Ver pedido</button>
       </div>
     `).join('');
   }
 
-  function verPedido(id) {
+  // Pedidos nuevos o cancelados abren el detalle; los ya aceptados van directo al proceso
+  function verPedido(id, estado) {
     localStorage.setItem('pedido_negocio', id);
-    window.location.href = '/negocio/detalle-pedido.html';
+    const verDetalle = estado === 'pendiente' || estado === 'cancelado';
+    window.location.href = verDetalle ? '/negocio/detalle-pedido.html' : '/negocio/proceso-pedido.html';
   }
 
   cargarPedidos();
